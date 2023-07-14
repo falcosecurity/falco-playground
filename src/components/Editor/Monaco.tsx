@@ -15,8 +15,8 @@ const Monaco = () => {
         if (editor) return editor
 
         return monaco.editor.create(monacoEL.current!, {
-          value: ["function x() {", "}"].join("\n"),
-          language: "typescript",
+          value: "",
+          language: "yaml",
           automaticLayout: true,
           padding: {
             top: 20,
