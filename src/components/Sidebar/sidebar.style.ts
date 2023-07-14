@@ -6,7 +6,7 @@ export const SideDiv = styled.div`
   flex-direction: column;
   flex-wrap: wrap;
   flex: 1 1 25%;
-  gap: 0.5rem;
+  gap: 1rem;
 `
 export const CtaDiv = styled.div`
   border-bottom: 2.5px solid rgba(5, 5, 5, 0.06);
@@ -19,4 +19,9 @@ export const Button = styled(AntdButton)`
 
 export const ErrorDiv = styled.div`
   flex: 1 1 60%;
+  background-color: black;
+  font-family: "Source Code Pro";
+  color: #f24c3d;
+  padding: 1rem;
+  border-radius: 1rem;
 `

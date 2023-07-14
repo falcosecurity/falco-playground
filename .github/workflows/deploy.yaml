@@ -9,13 +9,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v1
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
       - name: Install and build
         run: npm install && npm run build
@@ -24,4 +25,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.1
         with:
           branch: gh-pages
-          folder: build
+          folder: dist
