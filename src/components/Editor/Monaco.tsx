@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api"
+
 import Editor from "./monaco.style"
 
 const Monaco = () => {
@@ -16,6 +17,7 @@ const Monaco = () => {
         return monaco.editor.create(monacoEL.current!, {
           value: ["function x() {", "}"].join("\n"),
           language: "typescript",
+          automaticLayout: true,
           padding: {
             top: 20,
           },
