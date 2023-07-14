@@ -1,11 +1,14 @@
 {
   "name": "falco-playground",
+  "homepage": "https://rohith-raju.github.io/falco-playground",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build --base=./ ",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "fix": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --fix",
     "preview": "vite preview"
@@ -13,6 +16,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
     "antd": "^5.7.0",
+    "gh-pages": "^5.0.0",
     "monaco-editor": "^0.40.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
