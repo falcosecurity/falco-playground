@@ -1,6 +1,6 @@
-import { Section } from "./content.style"
-import Monaco from "../Editor/Monaco"
-import Sidebar from "../Sidebar/Sidebar"
+import { Section } from "./content.style";
+import Monaco from "../Editor/Monaco";
+import Sidebar from "../Sidebar/Sidebar";
 
 const Content = () => {
   return (
@@ -8,7 +8,7 @@ const Content = () => {
       <Monaco />
       <Sidebar />
     </Section>
-  )
-}
+  );
+};
 
-export default Content
+export default Content;

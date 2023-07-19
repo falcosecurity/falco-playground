@@ -1,5 +1,5 @@
-import { Nav, NavItems, NavList } from "./navbar.style"
-import falcoLogo from "../../assets/logo.svg"
+import { Nav, NavItems, NavList } from "./navbar.style";
+import falcoLogo from "../../assets/logo.svg";
 
 const Navbar = () => {
   return (
@@ -14,7 +14,7 @@ const Navbar = () => {
         </NavList>
       </Nav>
     </>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

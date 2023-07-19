@@ -18,9 +18,10 @@
     "indent": ["error", 2],
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "double"],
-    "semi": ["error", "never"],
+    "semi": ["error", "always"],
     "no-unused-vars": "warn",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "no-empty-pattern": "off"
   },
   "settings": {
     "react": {

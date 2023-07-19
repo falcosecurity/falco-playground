@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
+    "@types/emscripten": "^1.39.6",
     "antd": "^5.7.0",
     "gh-pages": "^5.0.0",
     "monaco-editor": "^0.40.0",
