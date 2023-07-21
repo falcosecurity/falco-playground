@@ -4,11 +4,10 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import Editor from "./monaco.style";
 
 const Monaco = () => {
+  const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
-
-  const monacoEL = useRef(null);
-
+  const [value, setValue] = useState<string>("");
   useEffect(() => {
     if (monacoEL) {
       setEditor((editor) => {
@@ -27,7 +26,22 @@ const Monaco = () => {
     return () => editor?.dispose();
   }, [monacoEL.current]);
 
-  return <Editor ref={monacoEL} />;
+  useEffect(() => {
+    if (editor) {
+      editor.getModel().onDidChangeContent(() => {
+        console.log("changed");
+      });
+    }
+  });
+
+  return (
+    <Editor
+      onChange={() => {
+        console.log("changed");
+      }}
+      ref={monacoEL}
+    />
+  );
 };
 
 export default Monaco;
