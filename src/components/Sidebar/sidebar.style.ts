@@ -18,4 +18,6 @@ export const ErrorDiv = styled.div`
   color: #f24c3d;
   padding: 1rem;
   border-radius: 1rem;
+  font-size: 0.8rem;
+  white-space: pre-line;
 `;

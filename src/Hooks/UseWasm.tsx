@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import Module from "./falco.js";
 
 interface EmscriptenModule {
-  [x: string]: any;
-  callMain([]: string[]): string;
+  callMain([]): string;
+  FS: typeof FS;
 }
 
 interface Falco {
   module: EmscriptenModule;
-  main(file?: string): Promise<string[]>;
+  writeFile(path, string): Promise<string[]>;
+  main(): Promise<string[]>;
 }
 
 function useWasm() {
@@ -41,10 +42,27 @@ function useWasm() {
 
         const FalcoObj: Falco = {
           module: module,
-          main: async (file) => {
+          writeFile: async (path: string, code: string) => {
             out = "";
             err = "";
-            module.callMain(["--help"]);
+            module.FS.writeFile(path, code);
+            module.callMain([
+              "--validate",
+              "rule.yaml",
+              "-o",
+              "json_output=true",
+              "-o",
+              "log_level=debug",
+              "-v",
+              "-o",
+              "log_stderr=true",
+            ]);
+            return [out, err];
+          },
+          main: async () => {
+            out = "";
+            err = "";
+            module.callMain(["--validate", "rule.yaml"]);
             return [out, err];
           },
         };

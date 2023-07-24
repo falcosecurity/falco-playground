@@ -1,4 +1,4 @@
-/* eslint-disable */
+/*eslint-disable*/
 var Module = (() => {
   var _scriptDir =
     typeof document !== "undefined" && document.currentScript
@@ -8410,6 +8410,9 @@ var Module = (() => {
 
     // === Auto-generated postamble setup entry stuff ===
 
+    Module["callMain"] = callMain;
+    Module["FS"] = FS;
+
     var calledRun;
 
     /**
@@ -8457,7 +8460,6 @@ var Module = (() => {
         calledMain = true;
       }
     }
-    Module["callMain"] = callMain;
 
     /** @type {function(Array=)} */
     function run(args) {
