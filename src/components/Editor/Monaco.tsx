@@ -1,8 +1,11 @@
-import React, { useState, useRef, useEffect, Dispatch } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { setDiagnosticsOptions } from "monaco-yaml";
+import YamlWorker from "./yaml.worker.js?worker";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 import Editor from "./monaco.style";
 import { example1, example2, example3 } from "./examples";
+import { Uri } from "monaco-editor";
 
 interface props {
   data: React.Dispatch<React.SetStateAction<string>>;
@@ -13,14 +16,25 @@ const Monaco = ({ data, example }: props) => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const modelUri = Uri.parse("a://b/foo.json");
   useEffect(() => {
     if (monacoEL) {
       setEditor((editor) => {
         if (editor) return editor;
-
+        setDiagnosticsOptions({
+          enableSchemaRequest: true,
+          hover: true,
+          completion: true,
+          validate: true,
+          format: true,
+        });
+        window.MonacoEnvironment = {
+          getWorker() {
+            return new YamlWorker();
+          },
+        };
         return monaco.editor.create(monacoEL.current!, {
-          value: example1,
-          language: "yaml",
+          model: monaco.editor.createModel(example1, "yaml", modelUri),
           automaticLayout: true,
           padding: {
             top: 20,

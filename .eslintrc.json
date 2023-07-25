@@ -21,7 +21,8 @@
     "semi": ["error", "always"],
     "no-unused-vars": "warn",
     "react/react-in-jsx-scope": "off",
-    "no-empty-pattern": "off"
+    "no-empty-pattern": "off",
+    "@typescript-eslint/ban-ts-comment": "off"
   },
   "settings": {
     "react": {

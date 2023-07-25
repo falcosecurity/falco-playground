@@ -18,6 +18,9 @@ const Content = () => {
     const autoSave = async () => {
       try {
         const [out, err] = await wasm.writeFile("rule.yaml", code);
+        console.log("OUT: " + out);
+        console.log("ERR: " + err);
+
         setErr("");
       } catch (err) {
         setErr(err);

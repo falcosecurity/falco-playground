@@ -20,7 +20,7 @@ interface props {
 
 const Sidebar = ({ code, example }: props) => {
   const [wasm, loading] = useWasm();
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<string>(null);
   const [FalcoStd, setFalcoStd] = useState<FalcoStdOut>();
   const handleMenuClick = (items) => {
     example(() => {
@@ -49,7 +49,7 @@ const Sidebar = ({ code, example }: props) => {
           <Button
             onClick={async () => {
               const [out, err] = await wasm.writeFile("rule.yaml", code);
-              setFalcoStd(() => JSON.parse(out));
+              setFalcoStd(JSON.parse(out));
               setError(err);
             }}
             icon={<PlayCircleFilled />}
@@ -77,7 +77,15 @@ const Sidebar = ({ code, example }: props) => {
           <Button icon={<ClearOutlined />}> Clear Console </Button>
         </Space>
       </CtaDiv>
-      <ErrorDiv>{error != " " ? <p>{error}</p> : ""}</ErrorDiv>
+      {FalcoStd?.falco_load_results[0].errors.length == 0 ? (
+        <ErrorDiv $error>
+          <p>Success:{error}</p>
+        </ErrorDiv>
+      ) : (
+        <ErrorDiv>
+          <p>Error:{error}</p>
+        </ErrorDiv>
+      )}
     </SideDiv>
   );
 };

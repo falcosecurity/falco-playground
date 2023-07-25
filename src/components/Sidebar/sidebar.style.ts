@@ -11,11 +11,11 @@ export const CtaDiv = styled.div`
   flex: 1 1 15%;
 `;
 
-export const ErrorDiv = styled.div`
+export const ErrorDiv = styled.div<{ $error?: boolean }>`
   flex: 1 1 75%;
   background-color: black;
   font-family: "Source Code Pro";
-  color: #f24c3d;
+  color: ${(props) => (props.$error ? "#9DC08B" : "#f24c3d")};
   padding: 1rem;
   border-radius: 1rem;
   font-size: 0.8rem;
