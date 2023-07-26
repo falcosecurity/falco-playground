@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { setDiagnosticsOptions } from "monaco-yaml";
-import YamlWorker from "./yaml.worker.js?worker";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import { setDiagnosticsOptions } from "monaco-yaml";
+import falcoSchema from "./falcoSchema.json";
+import YamlWorker from "./yaml.worker.js?worker";
+import { JSONSchema6 } from "json-schema";
 
 import Editor from "./monaco.style";
 import { example1, example2, example3 } from "./examples";
@@ -16,7 +18,8 @@ const Monaco = ({ data, example }: props) => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const modelUri = Uri.parse("a://b/foo.json");
+  const baseURL = `${window.location.protocol}//${window.location.host}`;
+  const modelUri = Uri.parse(`${baseURL}/falcoSchema.json`);
   useEffect(() => {
     if (monacoEL) {
       setEditor((editor) => {
@@ -27,6 +30,13 @@ const Monaco = ({ data, example }: props) => {
           completion: true,
           validate: true,
           format: true,
+          schemas: [
+            {
+              schema: falcoSchema as JSONSchema6,
+              uri: `${baseURL}/falcoSchema.json`,
+              fileMatch: ["falcoSchema.yaml"],
+            },
+          ],
         });
         window.MonacoEnvironment = {
           getWorker() {
