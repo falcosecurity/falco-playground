@@ -9,7 +9,7 @@ import useWasm from "../../Hooks/UseWasm";
 const Content = () => {
   const [code, setCode] = useState<string>("");
   const [example, setExample] = useState<string>();
-  const debouncedCode = useDebounce(code, 500);
+  const debouncedCode = useDebounce(code, 800);
   const [err, setErr] = useState("");
 
   const [wasm] = useWasm();
@@ -34,7 +34,7 @@ const Content = () => {
   return (
     <Section>
       <Monaco data={setCode} example={example} />
-      <Sidebar code={code} example={setExample} />
+      <Sidebar code={debouncedCode} example={setExample} />
     </Section>
   );
 };

@@ -10,7 +10,7 @@ import {
 import type { MenuProps } from "antd";
 import { Button, Space, Upload, Dropdown } from "antd";
 import useWasm from "../../Hooks/UseWasm";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FalcoStdOut } from "./falco_output";
 
 interface props {
@@ -19,9 +19,9 @@ interface props {
 }
 
 const Sidebar = ({ code, example }: props) => {
-  const [wasm, loading] = useWasm();
-  const [error, setError] = useState<string>(null);
-  const [FalcoStd, setFalcoStd] = useState<FalcoStdOut>();
+  const [wasm] = useWasm();
+  const [falcoOut, setFalcoOut] = useState<string>(null);
+  const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
   const handleMenuClick = (items) => {
     example(() => {
       return items.key;
@@ -42,16 +42,22 @@ const Sidebar = ({ code, example }: props) => {
     },
   ];
 
+  const compileCode = async () => {
+    const [jsonOut, stdout] = await wasm.writeFile("rule.yaml", code);
+    setFalcoStd(JSON.parse(jsonOut));
+    setFalcoOut(stdout);
+  };
+
+  useEffect(() => {
+    compileCode();
+  }, [code]);
+
   return (
     <SideDiv>
       <CtaDiv>
         <Space wrap size="middle">
           <Button
-            onClick={async () => {
-              const [out, err] = await wasm.writeFile("rule.yaml", code);
-              setFalcoStd(JSON.parse(out));
-              setError(err);
-            }}
+            onClick={compileCode}
             icon={<PlayCircleFilled />}
             type="primary"
             size="large"
@@ -77,13 +83,13 @@ const Sidebar = ({ code, example }: props) => {
           <Button icon={<ClearOutlined />}> Clear Console </Button>
         </Space>
       </CtaDiv>
-      {FalcoStd?.falco_load_results[0].errors.length == 0 ? (
-        <ErrorDiv $error>
-          <p>Success:{error}</p>
+      {falcoStd?.falco_load_results[0].errors.length == 0 ? (
+        <ErrorDiv>
+          <p>Success:{falcoOut}</p>
         </ErrorDiv>
       ) : (
-        <ErrorDiv>
-          <p>Error:{error}</p>
+        <ErrorDiv $error>
+          <p>Error:{falcoOut}</p>
         </ErrorDiv>
       )}
     </SideDiv>

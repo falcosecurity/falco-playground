@@ -15,7 +15,7 @@ export const ErrorDiv = styled.div<{ $error?: boolean }>`
   flex: 1 1 75%;
   background-color: black;
   font-family: "Source Code Pro";
-  color: ${(props) => (props.$error ? "#9DC08B" : "#f24c3d")};
+  color: ${(props) => (props.$error ? "#f24c3d" : "#9DC08B")};
   padding: 1rem;
   border-radius: 1rem;
   font-size: 0.8rem;
