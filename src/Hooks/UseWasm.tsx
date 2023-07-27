@@ -69,10 +69,10 @@ function useWasm() {
 
         setFalco(FalcoObj);
         setError(null);
+        setLoading(false);
       } catch (err) {
         setError(err);
       }
-      setLoading(false);
     };
     fetchWasm();
   }, []);

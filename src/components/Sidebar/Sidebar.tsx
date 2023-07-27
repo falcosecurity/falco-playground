@@ -19,7 +19,7 @@ interface props {
 }
 
 const Sidebar = ({ code, example }: props) => {
-  const [wasm] = useWasm();
+  const [wasm, loading] = useWasm();
   const [falcoOut, setFalcoOut] = useState<string>(null);
   const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
   const handleMenuClick = (items) => {
@@ -43,14 +43,16 @@ const Sidebar = ({ code, example }: props) => {
   ];
 
   const compileCode = async () => {
-    const [jsonOut, stdout] = await wasm.writeFile("rule.yaml", code);
-    setFalcoStd(JSON.parse(jsonOut));
-    setFalcoOut(stdout);
+    if (wasm) {
+      const [jsonOut, stdout] = await wasm.writeFile("rule.yaml", code);
+      setFalcoStd(JSON.parse(jsonOut));
+      setFalcoOut(stdout);
+    }
   };
 
   useEffect(() => {
     compileCode();
-  }, [code]);
+  }, [code, loading]);
 
   return (
     <SideDiv>
