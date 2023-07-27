@@ -43,8 +43,16 @@ const Monaco = ({ data, example }: props) => {
             return new YamlWorker();
           },
         };
+        let model;
+        const localCode = localStorage.getItem("code");
+        if (localCode) {
+          model = monaco.editor.createModel(localCode, "yaml", modelUri);
+          localStorage.setItem("code", localCode);
+        } else {
+          model = monaco.editor.createModel(example1, "yaml", modelUri);
+        }
         return monaco.editor.create(monacoEL.current!, {
-          model: monaco.editor.createModel(example1, "yaml", modelUri),
+          model: model,
           automaticLayout: true,
           padding: {
             top: 20,
@@ -70,16 +78,11 @@ const Monaco = ({ data, example }: props) => {
     }
   }, [example]);
 
-  useEffect(() => {
-    if (editor) {
-      editor.getModel().onDidChangeContent(() => {
-        data(() => {
-          return editor.getModel().getValue();
-        });
-      });
-    }
+  editor?.getModel().onDidChangeContent(() => {
+    data(() => {
+      return editor.getModel().getValue();
+    });
   });
-
   return <Editor ref={monacoEL} />;
 };
 

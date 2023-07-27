@@ -1,9 +1,9 @@
+import { useEffect, useState } from "react";
+
 import { Section } from "./content.style";
 import Monaco from "../Editor/Monaco";
 import Sidebar from "../Sidebar/Sidebar";
 import { useDebounce } from "../../Hooks/UseDebounce";
-
-import { useEffect, useState } from "react";
 import useWasm from "../../Hooks/UseWasm";
 
 const Content = () => {
@@ -27,6 +27,9 @@ const Content = () => {
       }
     };
     autoSave();
+    if (debouncedCode) {
+      localStorage.setItem("code", debouncedCode);
+    }
   }, [debouncedCode]);
   return (
     <Section>
