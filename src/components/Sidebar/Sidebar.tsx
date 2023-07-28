@@ -1,4 +1,4 @@
-import { CtaDiv, ErrorDiv, SideDiv } from "./sidebar.style";
+import { CtaDiv, ErrorDiv, SideDiv, SpinDiv } from "./sidebar.style";
 import {
   PlayCircleFilled,
   DownloadOutlined,
@@ -50,8 +50,28 @@ const Sidebar = ({ code, example }: props) => {
     }
   };
 
+  const conditionallyRenderTerminal = () => {
+    if (!falcoStd) {
+      return <SpinDiv size="large" />;
+    } else if (falcoStd.falco_load_results[0].successful) {
+      return (
+        <ErrorDiv>
+          <p>Success:{falcoOut}</p>
+        </ErrorDiv>
+      );
+    } else {
+      return (
+        <ErrorDiv $error>
+          <p>Error:{falcoOut}</p>
+        </ErrorDiv>
+      );
+    }
+  };
+
   useEffect(() => {
-    compileCode();
+    if (code) {
+      compileCode();
+    }
   }, [code, loading]);
 
   return (
@@ -67,12 +87,14 @@ const Sidebar = ({ code, example }: props) => {
             Run
           </Button>
           <Upload showUploadList={false}>
-            <Button icon={<UploadOutlined />}>Import Yaml</Button>
+            <Button disabled icon={<UploadOutlined />}>
+              Import Yaml
+            </Button>
           </Upload>
-          <Button block icon={<DownloadOutlined />}>
+          <Button disabled block icon={<DownloadOutlined />}>
             Download
           </Button>
-          <Button block icon={<CopyOutlined />}>
+          <Button disabled block icon={<CopyOutlined />}>
             Copy
           </Button>
           <Dropdown
@@ -82,18 +104,13 @@ const Sidebar = ({ code, example }: props) => {
             <Button icon={<FileOutlined />}>Load Examples</Button>
           </Dropdown>
 
-          <Button icon={<ClearOutlined />}> Clear Console </Button>
+          <Button disabled icon={<ClearOutlined />}>
+            {" "}
+            Clear Console{" "}
+          </Button>
         </Space>
       </CtaDiv>
-      {falcoStd?.falco_load_results[0].errors.length == 0 ? (
-        <ErrorDiv>
-          <p>Success:{falcoOut}</p>
-        </ErrorDiv>
-      ) : (
-        <ErrorDiv $error>
-          <p>Error:{falcoOut}</p>
-        </ErrorDiv>
-      )}
+      {conditionallyRenderTerminal()}
     </SideDiv>
   );
 };

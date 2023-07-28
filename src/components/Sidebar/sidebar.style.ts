@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Spin } from "antd";
 
 export const SideDiv = styled.div`
   display: flex;
@@ -9,6 +10,10 @@ export const SideDiv = styled.div`
 export const CtaDiv = styled.div`
   //border-bottom: 2.5px solid rgba(5, 5, 5, 0.06);
   flex: 1 1 15%;
+`;
+
+export const SpinDiv = styled(Spin)`
+  flex: 1 1 50%;
 `;
 
 export const ErrorDiv = styled.div<{ $error?: boolean }>`

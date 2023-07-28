@@ -46,7 +46,9 @@ const Monaco = ({ data, example }: props) => {
         const localCode = localStorage.getItem("code");
         if (localCode) {
           model = monaco.editor.createModel(localCode, "yaml", modelUri);
-          localStorage.setItem("code", localCode);
+          data(() => {
+            return localCode;
+          });
         } else {
           model = monaco.editor.createModel(example1, "yaml", modelUri);
         }
