@@ -1,10 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import monacoEditorPlugin from "vite-plugin-monaco-editor";
+import monacoEditorPlugin, {
+  IMonacoEditorOpts,
+} from "vite-plugin-monaco-editor";
 
 // https://vitejs.dev/config/
 
-const option = {
+const option: IMonacoEditorOpts = {
+  languageWorkers: [],
   customWorkers: [{ label: "yaml", entry: "monaco-yaml/yaml.worker.js" }],
 };
 export default defineConfig({
