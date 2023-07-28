@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { setDiagnosticsOptions } from "monaco-yaml";
 import falcoSchema from "./falcoSchema.json";
 import YamlWorker from "./yaml.worker.js?worker";
@@ -7,7 +6,7 @@ import { JSONSchema6 } from "json-schema";
 
 import Editor from "./monaco.style";
 import { example1, example2, example3 } from "./examples";
-import { Uri } from "monaco-editor";
+import { monaco, Uri } from "./customMocaco";
 
 interface props {
   data: React.Dispatch<React.SetStateAction<string>>;
