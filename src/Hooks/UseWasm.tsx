@@ -10,14 +10,25 @@ interface EmscriptenModule {
 
 interface Falco {
   module: EmscriptenModule;
-  writeFile(path, string): Promise<string[]>;
-  main(): Promise<string[]>;
+  writeFileAndRun(path, string): Promise<string[]>;
+  run(): Promise<string[]>;
 }
 
 function useWasm() {
   const [loading, setLoading] = useState<boolean>(false);
   const [falco, setFalco] = useState<Falco>();
   const [error, setError] = useState<string>();
+  const falcoOptions = [
+    "--validate",
+    "rule.yaml",
+    "-o",
+    "json_output=true",
+    "-o",
+    "log_level=debug",
+    "-v",
+    "-o",
+    "log_stderr=true",
+  ];
 
   useEffect(() => {
     setLoading(true);
@@ -42,27 +53,18 @@ function useWasm() {
 
         const FalcoObj: Falco = {
           module: module,
-          writeFile: async (path: string, code: string) => {
+          writeFileAndRun: async (path: string, code: string) => {
             out = "";
             err = "";
             module.FS.writeFile(path, code);
-            module.callMain([
-              "--validate",
-              "rule.yaml",
-              "-o",
-              "json_output=true",
-              "-o",
-              "log_level=debug",
-              "-v",
-              "-o",
-              "log_stderr=true",
-            ]);
+            module.callMain(falcoOptions);
             return [out, err];
           },
-          main: async () => {
+
+          run: async () => {
             out = "";
             err = "";
-            module.callMain(["--validate", "rule.yaml"]);
+            module.callMain(falcoOptions);
             return [out, err];
           },
         };

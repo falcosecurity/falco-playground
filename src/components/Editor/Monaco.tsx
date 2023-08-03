@@ -7,18 +7,21 @@ import { JSONSchema6 } from "json-schema";
 import Editor from "./monaco.style";
 import { example1, example2, example3 } from "./examples";
 import { monaco, Uri } from "./customMocaco";
+import type { CustomError, Error, Position } from "../Sidebar/falco_output";
 
 interface props {
   data: React.Dispatch<React.SetStateAction<string>>;
   example: string;
+  falcoJsonErr: Error[];
 }
 
-const Monaco = ({ data, example }: props) => {
+const Monaco = ({ data, example, falcoJsonErr }: props) => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const baseURL = `${window.location.protocol}//${window.location.host}`;
   const modelUri = Uri.parse(`${baseURL}/falcoSchema.json`);
+  let model: monaco.editor.ITextModel;
   useEffect(() => {
     if (monacoEL) {
       setEditor((editor) => {
@@ -42,7 +45,6 @@ const Monaco = ({ data, example }: props) => {
             return new YamlWorker();
           },
         };
-        let model;
         const localCode = localStorage.getItem("code");
         if (localCode) {
           model = monaco.editor.createModel(localCode, "yaml", modelUri);
@@ -63,7 +65,6 @@ const Monaco = ({ data, example }: props) => {
     }
     return () => editor?.dispose();
   }, [monacoEL.current]);
-
   useEffect(() => {
     if (editor) {
       switch (example) {
@@ -78,6 +79,46 @@ const Monaco = ({ data, example }: props) => {
       }
     }
   }, [example]);
+
+  const handleSquigglyLines = (): CustomError[] => {
+    const errArr: CustomError[] = [];
+    falcoJsonErr?.forEach((err) => {
+      err.context.locations.forEach((location, idx) => {
+        if (idx != err.context.locations.length - 1) {
+          errArr.push({
+            code: err.code,
+            message: "Error at " + location.item_type,
+            position: location.position,
+          });
+        } else {
+          errArr.push({
+            code: err.code,
+            message: err.message,
+            position: location.position,
+          });
+        }
+      });
+    });
+    return errArr;
+  };
+
+  useEffect(() => {
+    const squigglyErr = handleSquigglyLines();
+    const Markerdata: monaco.editor.IMarkerData[] = [];
+    console.log("triggred");
+    squigglyErr?.map((err) => {
+      Markerdata.push({
+        code: err.code,
+        startColumn: err.position.column + 1,
+        startLineNumber: err.position.line + 1,
+        severity: monaco.MarkerSeverity.Error,
+        message: err.message,
+        endLineNumber: err.position.line + 1,
+        endColumn: err.position.column + 1,
+      });
+    });
+    monaco?.editor.setModelMarkers(editor?.getModel(), "owner", Markerdata);
+  }, [falcoJsonErr?.length]);
 
   editor?.getModel().onDidChangeContent(() => {
     data(() => {

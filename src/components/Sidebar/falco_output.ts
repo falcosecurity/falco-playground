@@ -33,3 +33,9 @@ export interface Position {
   name: string;
   offset: number;
 }
+
+export interface CustomError {
+  position: Position;
+  message: string;
+  code: string;
+}

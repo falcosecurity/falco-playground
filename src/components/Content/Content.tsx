@@ -5,11 +5,13 @@ import Monaco from "../Editor/Monaco";
 import Sidebar from "../Sidebar/Sidebar";
 import { useDebounce } from "../../Hooks/UseDebounce";
 import useWasm from "../../Hooks/UseWasm";
+import type { Error } from "../Sidebar/falco_output";
 
 const Content = () => {
   const [code, setCode] = useState<string>("");
   const [example, setExample] = useState<string>();
   const debouncedCode = useDebounce(code, 800);
+  const [falcoJsonErr, setFalcoJsonErr] = useState<Error[]>();
   const [err, setErr] = useState("");
 
   const [wasm] = useWasm();
@@ -17,10 +19,7 @@ const Content = () => {
   useEffect(() => {
     const autoSave = async () => {
       try {
-        const [out, err] = await wasm.writeFile("rule.yaml", code);
-        console.log("OUT: " + out);
-        console.log("ERR: " + err);
-
+        await wasm.writeFileAndRun("rule.yaml", code);
         setErr("");
       } catch (err) {
         setErr(err);
@@ -33,8 +32,12 @@ const Content = () => {
   }, [debouncedCode]);
   return (
     <Section>
-      <Monaco data={setCode} example={example} />
-      <Sidebar code={debouncedCode} example={setExample} />
+      <Monaco data={setCode} example={example} falcoJsonErr={falcoJsonErr} />
+      <Sidebar
+        code={debouncedCode}
+        example={setExample}
+        errJson={setFalcoJsonErr}
+      />
     </Section>
   );
 };

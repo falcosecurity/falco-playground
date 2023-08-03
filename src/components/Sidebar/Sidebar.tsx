@@ -11,14 +11,15 @@ import type { MenuProps } from "antd";
 import { Button, Space, Upload, Dropdown } from "antd";
 import useWasm from "../../Hooks/UseWasm";
 import { useEffect, useState } from "react";
-import { FalcoStdOut } from "./falco_output";
+import type { FalcoStdOut, Error } from "./falco_output";
 
 interface props {
   code: string;
   example: React.Dispatch<React.SetStateAction<string>>;
+  errJson: React.Dispatch<React.SetStateAction<Error[]>>;
 }
 
-const Sidebar = ({ code, example }: props) => {
+const Sidebar = ({ code, example, errJson }: props) => {
   const [wasm, loading] = useWasm();
   const [falcoOut, setFalcoOut] = useState<string>(null);
   const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
@@ -44,7 +45,7 @@ const Sidebar = ({ code, example }: props) => {
 
   const compileCode = async () => {
     if (wasm) {
-      const [jsonOut, stdout] = await wasm.writeFile("rule.yaml", code);
+      const [jsonOut, stdout] = await wasm.writeFileAndRun("rule.yaml", code);
       setFalcoStd(JSON.parse(jsonOut));
       setFalcoOut(stdout);
     }
@@ -56,13 +57,13 @@ const Sidebar = ({ code, example }: props) => {
     } else if (falcoStd.falco_load_results[0].successful) {
       return (
         <ErrorDiv>
-          <p>Success:{falcoOut}</p>
+          <p>{falcoOut}</p>
         </ErrorDiv>
       );
     } else {
       return (
         <ErrorDiv $error>
-          <p>Error:{falcoOut}</p>
+          <p>{falcoOut}</p>
         </ErrorDiv>
       );
     }
@@ -73,6 +74,12 @@ const Sidebar = ({ code, example }: props) => {
       compileCode();
     }
   }, [code, loading]);
+
+  useEffect(() => {
+    errJson(() => {
+      return falcoStd?.falco_load_results[0].errors;
+    });
+  }, [falcoStd?.falco_load_results[0].errors.length]);
 
   return (
     <SideDiv>
@@ -105,8 +112,7 @@ const Sidebar = ({ code, example }: props) => {
           </Dropdown>
 
           <Button disabled icon={<ClearOutlined />}>
-            {" "}
-            Clear Console{" "}
+            Clear Console
           </Button>
         </Space>
       </CtaDiv>
