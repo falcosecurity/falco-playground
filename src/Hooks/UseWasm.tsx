@@ -10,8 +10,8 @@ interface EmscriptenModule {
 
 interface Falco {
   module: EmscriptenModule;
-  compileWithScap(file, code): Promise<string[]>;
-  writeFileAndRun(path, string): Promise<string[]>;
+  compileWithScap(file: Uint8Array, code: string): Promise<string[]>;
+  writeFileAndRun(path: string, code: string): Promise<string[]>;
   run(): Promise<string[]>;
 }
 
@@ -55,7 +55,7 @@ function useWasm() {
         let err: string;
         const module: EmscriptenModule = await Module({
           noInitialRun: true,
-
+          thisProgram: "falco",
           locateFile: function (s: string) {
             return s;
           },
@@ -77,7 +77,7 @@ function useWasm() {
             return [out, err];
           },
 
-          compileWithScap: async (file: ArrayBufferView, code: string) => {
+          compileWithScap: async (file: Uint8Array, code: string) => {
             out = "";
             err = "";
             module.FS.writeFile("capture_file.scap", file);

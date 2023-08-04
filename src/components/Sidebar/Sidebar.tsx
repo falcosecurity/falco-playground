@@ -55,13 +55,20 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   const compileWithScap = async () => {
     if (wasm) {
       const data = await fetch(scap);
-      const [jsonOut, stdout] = await wasm.compileWithScap(
-        new DataView(await data.arrayBuffer()),
+      const dataBuf = await data.arrayBuffer();
+      const [jsonLines, stdout] = await wasm.compileWithScap(
+        new Uint8Array(dataBuf),
         code
       );
-      console.log(jsonOut);
-      console.log(stdout);
-      setFalcoStd(JSON.parse(jsonOut));
+
+      for (let jsonLine of jsonLines.split('\n')) {
+        if (jsonLine.length > 0 && jsonLine.startsWith("{")) {
+          // todo(rohith): put this output somewhere useful
+          let falcoAlert = JSON.parse(jsonLine);
+          console.log(falcoAlert);
+          alert(jsonLine);
+        }
+      }
       setFalcoOut(stdout);
     }
   };
