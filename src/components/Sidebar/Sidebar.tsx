@@ -17,9 +17,10 @@ interface props {
   code: string;
   example: React.Dispatch<React.SetStateAction<string>>;
   errJson: React.Dispatch<React.SetStateAction<Error[]>>;
+  uploadCode: React.Dispatch<React.SetStateAction<string | ArrayBuffer>>;
 }
 
-const Sidebar = ({ code, example, errJson }: props) => {
+const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   const [wasm, loading] = useWasm();
   const [falcoOut, setFalcoOut] = useState<string>(null);
   const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
@@ -69,8 +70,29 @@ const Sidebar = ({ code, example, errJson }: props) => {
     }
   };
 
+  const handleUpload = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadCode(() => {
+        return e.target.result;
+      });
+    };
+    reader.readAsText(file);
+    return false;
+  };
+
+  const handleDownload = () => {
+    const file = new Blob([code], { type: "text/plain" });
+    const element = document.createElement("a");
+    element.href = URL.createObjectURL(file);
+    element.download = "rule.yaml";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
+
   useEffect(() => {
     if (code) {
+      console.log("compiling");
       compileCode();
     }
   }, [code, loading]);
@@ -93,15 +115,23 @@ const Sidebar = ({ code, example, errJson }: props) => {
           >
             Run
           </Button>
-          <Upload showUploadList={false}>
-            <Button disabled icon={<UploadOutlined />}>
-              Import Yaml
-            </Button>
+          <Upload
+            accept=".yaml"
+            beforeUpload={handleUpload}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />}>Import Yaml</Button>
           </Upload>
-          <Button disabled block icon={<DownloadOutlined />}>
+          <Button onClick={handleDownload} block icon={<DownloadOutlined />}>
             Download
           </Button>
-          <Button disabled block icon={<CopyOutlined />}>
+          <Button
+            onClick={() => {
+              navigator.clipboard.writeText(code);
+            }}
+            block
+            icon={<CopyOutlined />}
+          >
             Copy
           </Button>
           <Dropdown

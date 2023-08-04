@@ -7,15 +7,23 @@ import { JSONSchema6 } from "json-schema";
 import Editor from "./monaco.style";
 import { example1, example2, example3 } from "./examples";
 import { monaco, Uri } from "./customMocaco";
-import type { CustomError, Error, Position } from "../Sidebar/falco_output";
+import type { CustomError, Error } from "../Sidebar/falco_output";
 
 interface props {
   data: React.Dispatch<React.SetStateAction<string>>;
   example: string;
   falcoJsonErr: Error[];
+  uploadCode: string;
+  setUploadCode: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Monaco = ({ data, example, falcoJsonErr }: props) => {
+const Monaco = ({
+  data,
+  example,
+  falcoJsonErr,
+  uploadCode,
+  setUploadCode,
+}: props) => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -53,6 +61,9 @@ const Monaco = ({ data, example, falcoJsonErr }: props) => {
           });
         } else {
           model = monaco.editor.createModel(example1, "yaml", modelUri);
+          data(() => {
+            return example1;
+          });
         }
         return monaco.editor.create(monacoEL.current!, {
           model: model,
@@ -65,6 +76,7 @@ const Monaco = ({ data, example, falcoJsonErr }: props) => {
     }
     return () => editor?.dispose();
   }, [monacoEL.current]);
+
   useEffect(() => {
     if (editor) {
       switch (example) {
@@ -79,6 +91,15 @@ const Monaco = ({ data, example, falcoJsonErr }: props) => {
       }
     }
   }, [example]);
+
+  useEffect(() => {
+    if (uploadCode != "") {
+      editor?.getModel().setValue(uploadCode);
+    }
+    setUploadCode(() => {
+      return "";
+    });
+  }, [uploadCode]);
 
   const handleSquigglyLines = (): CustomError[] => {
     const errArr: CustomError[] = [];
@@ -105,7 +126,6 @@ const Monaco = ({ data, example, falcoJsonErr }: props) => {
   useEffect(() => {
     const squigglyErr = handleSquigglyLines();
     const Markerdata: monaco.editor.IMarkerData[] = [];
-    console.log("triggred");
     squigglyErr?.map((err) => {
       Markerdata.push({
         code: err.code,
