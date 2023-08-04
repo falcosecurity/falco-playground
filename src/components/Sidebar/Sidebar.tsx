@@ -4,7 +4,6 @@ import {
   DownloadOutlined,
   CopyOutlined,
   UploadOutlined,
-  ClearOutlined,
   FileOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -13,6 +12,7 @@ import useWasm from "../../Hooks/UseWasm";
 import { useEffect, useState } from "react";
 import type { FalcoStdOut, Error } from "./falco_output";
 
+import scap from "/connect_localhost.scap?url";
 interface props {
   code: string;
   example: React.Dispatch<React.SetStateAction<string>>;
@@ -47,6 +47,20 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   const compileCode = async () => {
     if (wasm) {
       const [jsonOut, stdout] = await wasm.writeFileAndRun("rule.yaml", code);
+      setFalcoStd(JSON.parse(jsonOut));
+      setFalcoOut(stdout);
+    }
+  };
+
+  const compileWithScap = async () => {
+    if (wasm) {
+      const data = await fetch(scap);
+      const [jsonOut, stdout] = await wasm.compileWithScap(
+        new DataView(await data.arrayBuffer()),
+        code
+      );
+      console.log(jsonOut);
+      console.log(stdout);
       setFalcoStd(JSON.parse(jsonOut));
       setFalcoOut(stdout);
     }
@@ -141,8 +155,8 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             <Button icon={<FileOutlined />}>Load Examples</Button>
           </Dropdown>
 
-          <Button disabled icon={<ClearOutlined />}>
-            Clear Console
+          <Button onClick={compileWithScap} icon={<PlayCircleFilled />}>
+            Run with scap
           </Button>
         </Space>
       </CtaDiv>

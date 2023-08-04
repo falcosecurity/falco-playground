@@ -6,10 +6,11 @@ export const SideDiv = styled.div`
   flex-direction: column;
   flex: 1 1 25%;
   gap: 1rem;
+  max-height: 83vh;
 `;
 export const CtaDiv = styled.div`
-  //border-bottom: 2.5px solid rgba(5, 5, 5, 0.06);
-  flex: 1 1 15%;
+  border-bottom: 2.5px solid rgba(5, 5, 5, 0.06);
+  flex: 1 1 3%;
 `;
 
 export const SpinDiv = styled(Spin)`
@@ -17,7 +18,7 @@ export const SpinDiv = styled(Spin)`
 `;
 
 export const ErrorDiv = styled.div<{ $error?: boolean }>`
-  flex: 1 1 75%;
+  flex: 1 1 60%;
   background-color: black;
   font-family: "Source Code Pro";
   color: ${(props) => (props.$error ? "#f24c3d" : "#9DC08B")};
@@ -25,4 +26,5 @@ export const ErrorDiv = styled.div<{ $error?: boolean }>`
   border-radius: 1rem;
   font-size: 0.8rem;
   white-space: pre-line;
+  overflow-x: scroll;
 `;

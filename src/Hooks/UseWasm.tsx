@@ -10,6 +10,7 @@ interface EmscriptenModule {
 
 interface Falco {
   module: EmscriptenModule;
+  compileWithScap(file, code): Promise<string[]>;
   writeFileAndRun(path, string): Promise<string[]>;
   run(): Promise<string[]>;
 }
@@ -28,6 +29,21 @@ function useWasm() {
     "-v",
     "-o",
     "log_stderr=true",
+  ];
+  const falcoScapOptions = [
+    "-r",
+    "rule.yaml",
+    "-e",
+    "capture_file.scap",
+    "-o",
+    "json_output=true",
+    "-o",
+    "log_level=debug",
+    "-v",
+    "-o",
+    "log_stderr=true",
+    "-o",
+    "stdout_output.enabled=true",
   ];
 
   useEffect(() => {
@@ -61,6 +77,14 @@ function useWasm() {
             return [out, err];
           },
 
+          compileWithScap: async (file: ArrayBufferView, code: string) => {
+            out = "";
+            err = "";
+            module.FS.writeFile("capture_file.scap", file);
+            module.FS.writeFile("rule.yaml", code);
+            module.callMain(falcoScapOptions);
+            return [out, err];
+          },
           run: async () => {
             out = "";
             err = "";
