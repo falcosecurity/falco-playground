@@ -60,11 +60,11 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
         new Uint8Array(dataBuf),
         code
       );
-
-      for (let jsonLine of jsonLines.split('\n')) {
+      console.log(jsonLines);
+      for (const jsonLine of jsonLines.split("\n")) {
         if (jsonLine.length > 0 && jsonLine.startsWith("{")) {
           // todo(rohith): put this output somewhere useful
-          let falcoAlert = JSON.parse(jsonLine);
+          const falcoAlert = JSON.parse(jsonLine);
           console.log(falcoAlert);
           alert(jsonLine);
         }

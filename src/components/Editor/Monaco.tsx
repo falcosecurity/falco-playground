@@ -126,15 +126,21 @@ const Monaco = ({
   useEffect(() => {
     const squigglyErr = handleSquigglyLines();
     const Markerdata: monaco.editor.IMarkerData[] = [];
-    squigglyErr?.map((err) => {
+    console.log(squigglyErr);
+
+    squigglyErr?.map((err, idx) => {
+      const postition = editor.getModel().getPositionAt(err.position.offset);
+      console.log(
+        "Line: " + postition.lineNumber + "Collumn: " + postition.column
+      );
       Markerdata.push({
         code: err.code,
-        startColumn: err.position.column + 1,
-        startLineNumber: err.position.line + 1,
+        startColumn: postition.column,
+        startLineNumber: postition.lineNumber,
         severity: monaco.MarkerSeverity.Error,
         message: err.message,
-        endLineNumber: err.position.line + 1,
-        endColumn: err.position.column + 1,
+        endLineNumber: postition.lineNumber,
+        endColumn: postition.column,
       });
     });
     monaco?.editor.setModelMarkers(editor?.getModel(), "owner", Markerdata);
