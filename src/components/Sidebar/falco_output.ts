@@ -6,7 +6,7 @@ export interface FalcoLoadResult {
   errors: Error[];
   name: string;
   successful: boolean;
-  warnings: any[];
+  warnings: string[];
 }
 
 export interface Error {

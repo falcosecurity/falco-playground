@@ -128,7 +128,7 @@ const Monaco = ({
     const Markerdata: monaco.editor.IMarkerData[] = [];
     console.log(squigglyErr);
 
-    squigglyErr?.map((err, idx) => {
+    squigglyErr?.map((err) => {
       const postition = editor.getModel().getPositionAt(err.position.offset);
       console.log(
         "Line: " + postition.lineNumber + "Collumn: " + postition.column

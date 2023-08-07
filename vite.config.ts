@@ -8,7 +8,6 @@ import monacoEditorPlugin, {
 
 const option: IMonacoEditorOpts = {
   languageWorkers: [],
-  customWorkers: [{ label: "yaml", entry: "monaco-yaml/yaml.worker.js" }],
 };
 export default defineConfig({
   plugins: [monacoEditorPlugin.default(option), react()],

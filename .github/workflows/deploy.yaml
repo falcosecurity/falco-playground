@@ -18,8 +18,14 @@ jobs:
         with:
           node-version: 18
 
+      - name: Test
+        uses: cypress-io/github-action@v5
+        with:
+          wait-on: http://localhost:5173
+          start: npx vite --host
+
       - name: Install and build
-        run: npm install && npm run build
+        run: npm install && npm run build && cd dist && rm -rf monacoeditorwork
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.1

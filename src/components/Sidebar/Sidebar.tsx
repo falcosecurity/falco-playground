@@ -78,13 +78,13 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
       return <SpinDiv size="large" />;
     } else if (falcoStd.falco_load_results[0].successful) {
       return (
-        <ErrorDiv>
+        <ErrorDiv className="terminal-success">
           <p>{falcoOut}</p>
         </ErrorDiv>
       );
     } else {
       return (
-        <ErrorDiv $error>
+        <ErrorDiv className="terminal-error" $error>
           <p>{falcoOut}</p>
         </ErrorDiv>
       );
