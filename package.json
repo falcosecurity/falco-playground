@@ -17,6 +17,7 @@
     "@ant-design/icons": "^5.1.4",
     "@types/emscripten": "^1.39.6",
     "antd": "^5.7.0",
+    "cypress": "^12.17.3",
     "gh-pages": "^5.0.0",
     "json-schema": "^0.4.0",
     "monaco-editor": "^0.40.0",
