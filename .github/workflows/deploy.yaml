@@ -18,6 +18,31 @@ jobs:
         with:
           node-version: 18
 
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: "CI.yml"
+          repo: "falcosecurity/falco"
+          run_id: 5764491712
+          name: falco-\d+\.\d+\.\d+-\d+\+[a-f0-9]+-wasm.tar.gz
+          name_is_regexp: true
+
+      - name: Extract artifact
+        run: |
+          tar -xvf falco-*-wasm.tar.gz/falco-*-wasm.tar.gz
+          mv falco-*-wasm/usr/bin/falco.wasm ./public
+          mv falco-*-wasm/usr/bin/falco.js ./src/Hooks/
+
+      - name: Remove Unwanted Artifacts
+        run: rm -rf falco-*-wasm.tar.gz falco-*-wasm
+
+      - name: Fix falco.js export
+        run: |
+          sudo apt install -y perl
+          perl -i -p0e  "s/(if \(typeof exports === 'object' && typeof module === 'object'\))[\s\S]*/export default Module;/g" ./src/Hooks/falco.js
+
       - name: Test
         uses: cypress-io/github-action@v5
         with:
