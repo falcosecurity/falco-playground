@@ -25,7 +25,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: "CI.yml"
           repo: "falcosecurity/falco"
-          pr: 1257
+          run_id: 5764491712
           name: falco-\d+\.\d+\.\d+-\d+\+[a-f0-9]+-wasm.tar.gz
           name_is_regexp: true
 
