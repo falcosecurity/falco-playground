@@ -9,12 +9,12 @@ import { example1, example2, example3 } from "./examples";
 import { monaco, Uri } from "./customMocaco";
 import type { CustomError, Error } from "../Sidebar/falco_output";
 
-interface props {
-  data: React.Dispatch<React.SetStateAction<string>>;
-  example: string;
-  falcoJsonErr: Error[];
-  uploadCode: string;
-  setUploadCode: React.Dispatch<React.SetStateAction<string>>;
+interface monacoProps {
+  data?: React.Dispatch<React.SetStateAction<string>>;
+  example?: string;
+  falcoJsonErr?: Error[];
+  uploadCode?: string;
+  setUploadCode?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const Monaco = ({
@@ -23,7 +23,7 @@ const Monaco = ({
   falcoJsonErr,
   uploadCode,
   setUploadCode,
-}: props) => {
+}: monacoProps) => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -126,13 +126,9 @@ const Monaco = ({
   useEffect(() => {
     const squigglyErr = handleSquigglyLines();
     const Markerdata: monaco.editor.IMarkerData[] = [];
-    console.log(squigglyErr);
 
     squigglyErr?.map((err) => {
       const postition = editor.getModel().getPositionAt(err.position.offset);
-      console.log(
-        "Line: " + postition.lineNumber + "Collumn: " + postition.column
-      );
       Markerdata.push({
         code: err.code,
         startColumn: postition.column,
@@ -151,7 +147,7 @@ const Monaco = ({
       return editor.getModel().getValue();
     });
   });
-  return <Editor ref={monacoEL} />;
+  return <Editor className="monaco" ref={monacoEL} />;
 };
 
 export default Monaco;

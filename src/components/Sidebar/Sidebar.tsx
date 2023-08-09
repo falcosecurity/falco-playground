@@ -7,7 +7,7 @@ import {
   FileOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Button, Space, Upload, Dropdown } from "antd";
+import { Button, Space, Upload, Dropdown, message, Modal } from "antd";
 import useWasm from "../../Hooks/UseWasm";
 import { useEffect, useState } from "react";
 import type { FalcoStdOut, Error } from "./falco_output";
@@ -24,7 +24,10 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   const [wasm, loading] = useWasm();
   const [falcoOut, setFalcoOut] = useState<string>(null);
   const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
+  const [modal, setModal] = useState({ state: false, content: "" });
+  const [messageApi, contextHolder] = message.useMessage();
   const handleMenuClick = (items) => {
+    message.success("Example" + items.key + " loaded succesfully");
     example(() => {
       return items.key;
     });
@@ -63,10 +66,12 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
       console.log(jsonLines);
       for (const jsonLine of jsonLines.split("\n")) {
         if (jsonLine.length > 0 && jsonLine.startsWith("{")) {
-          // todo(rohith): put this output somewhere useful
           const falcoAlert = JSON.parse(jsonLine);
+          setModal({
+            state: true,
+            content: JSON.stringify(falcoAlert, null, 10),
+          });
           console.log(falcoAlert);
-          alert(jsonLine);
         }
       }
       setFalcoOut(stdout);
@@ -94,15 +99,21 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   const handleUpload = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      uploadCode(() => {
-        return e.target.result;
-      });
+      if (e.target.result) {
+        messageApi.success("Successfully loaded yaml file");
+        uploadCode(() => {
+          return e.target.result;
+        });
+      } else {
+        messageApi.error("File is empty or invalid");
+      }
     };
     reader.readAsText(file);
     return false;
   };
 
   const handleDownload = () => {
+    messageApi.info("Downloading rule.yaml");
     const file = new Blob([code], { type: "text/plain" });
     const element = document.createElement("a");
     element.href = URL.createObjectURL(file);
@@ -113,7 +124,6 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
 
   useEffect(() => {
     if (code) {
-      console.log("compiling");
       compileCode();
     }
   }, [code, loading]);
@@ -126,6 +136,24 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
 
   return (
     <SideDiv>
+      {contextHolder}
+      <Modal
+        open={modal.state}
+        onOk={() => setModal({ state: false, content: "" })}
+        onCancel={() => setModal({ ...modal, state: false })}
+        destroyOnClose
+        title="Scap Results"
+        width={1000}
+      >
+        <pre
+          style={{
+            overflowY: "scroll",
+            overflowX: "scroll",
+          }}
+        >
+          {modal.content}
+        </pre>
+      </Modal>
       <CtaDiv>
         <Space wrap size="middle">
           <Button
@@ -148,6 +176,7 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
           </Button>
           <Button
             onClick={() => {
+              messageApi.success("Code coppied to clipboard");
               navigator.clipboard.writeText(code);
             }}
             block

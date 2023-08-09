@@ -9,7 +9,6 @@ export const SideDiv = styled.div`
   max-height: 83vh;
 `;
 export const CtaDiv = styled.div`
-  border-bottom: 2.5px solid rgba(5, 5, 5, 0.06);
   flex: 1 1 3%;
 `;
 
