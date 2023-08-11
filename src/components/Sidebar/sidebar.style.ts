@@ -7,6 +7,7 @@ export const SideDiv = styled.div`
   flex: 1 1 25%;
   gap: 1rem;
   max-height: 83vh;
+  min-width: 21rem;
 `;
 export const CtaDiv = styled.div`
   flex: 1 1 3%;

@@ -7,3 +7,12 @@ export const Section = styled.section`
   width: 95%;
   height: 100%;
 `;
+
+export const MobileOnlyDiv = styled.div`
+  display: none;
+  height: 10rem;
+  width: 10rem;
+  @media (max-width: 780px) {
+    display: unset;
+  }
+`;

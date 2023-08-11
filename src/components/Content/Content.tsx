@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-
-import { Section } from "./content.style";
-import Monaco from "../Editor/Monaco";
-import Sidebar from "../Sidebar/Sidebar";
 import { useDebounce } from "../../Hooks/UseDebounce";
 import useWasm from "../../Hooks/UseWasm";
 import type { Error } from "../Sidebar/falco_output";
+
+import { Section, MobileOnlyDiv } from "./content.style";
+import Monaco from "../Editor/Monaco";
+import Sidebar from "../Sidebar/Sidebar";
+import { CtaDiv } from "../Sidebar/sidebar.style";
 
 const Content = () => {
   const [code, setCode] = useState<string>("");
