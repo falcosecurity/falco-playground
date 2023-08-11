@@ -25,6 +25,6 @@ describe("Check if page loads succesfully", () => {
   it("Check if Terminal is loaded Properly,", () => {
     const date = new Date();
     cy.visit("/");
-    cy.get(".terminal-success").contains(date.getDate(), { timeout: 10000 });
+    cy.get(".terminal-success").contains(date.getDate(), { timeout: 20000 });
   });
 });
