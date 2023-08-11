@@ -1,9 +1,12 @@
 import { createGlobalStyle, styled } from "styled-components";
 
 export const GlobalStyle = createGlobalStyle`
-    body{
-        font-family: 'Open Sans', sans-serif;
-    }
+  html,
+  body {
+  margin: 0;
+  height: 100%;
+  font-family: 'Open Sans', sans-serif;
+}
 `;
 
 export const Container = styled.div`
@@ -12,7 +15,7 @@ export const Container = styled.div`
   height: 100%;
   align-items: center;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
   .ant-btn-primary {
     background-color: #00aec7;
   }
