@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { CtaDiv, ErrorDiv, SideDiv, SpinDiv } from "./sidebar.style";
 import {
   PlayCircleFilled,
@@ -5,13 +6,13 @@ import {
   CopyOutlined,
   UploadOutlined,
   FileOutlined,
+  ShareAltOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Space, Upload, Dropdown, message, Modal } from "antd";
+import * as lzstring from "lz-string";
 import useWasm from "../../Hooks/UseWasm";
-import { useEffect, useState } from "react";
 import type { FalcoStdOut, Error } from "./falco_output";
-
 import scap from "/connect_localhost.scap?url";
 interface props {
   code: string;
@@ -20,12 +21,17 @@ interface props {
   uploadCode: React.Dispatch<React.SetStateAction<string | ArrayBuffer>>;
 }
 
-const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
+export const encodedYaml = (yaml: string) => {
+  return lzstring.compressToBase64(yaml);
+};
+
+export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   const [wasm, loading] = useWasm();
   const [falcoOut, setFalcoOut] = useState<string>(null);
   const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
   const [modal, setModal] = useState({ state: false, content: "" });
   const [messageApi, contextHolder] = message.useMessage();
+
   const handleMenuClick = (items) => {
     message.success("Example" + items.key + " loaded succesfully");
     example(() => {
@@ -122,6 +128,15 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     element.click();
   };
 
+  const handleShare = () => {
+    const urlConstructor = new URLSearchParams();
+    const data = encodedYaml(code);
+    urlConstructor.append("code", data);
+    const URL = `${window.location.origin}/#/?${urlConstructor.toString()}`;
+    navigator.clipboard.writeText(URL);
+    message.success("Coppied URL to clipboard");
+  };
+
   useEffect(() => {
     if (code) {
       compileCode();
@@ -193,6 +208,9 @@ const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
 
           <Button onClick={compileWithScap} icon={<PlayCircleFilled />}>
             Run with scap
+          </Button>
+          <Button onClick={handleShare} icon={<ShareAltOutlined />}>
+            Share
           </Button>
         </Space>
       </CtaDiv>

@@ -1,6 +1,6 @@
 import Navbar from "./components/Navbar/Navbar";
 import Content from "./components/Content/Content";
-import { RouterProvider, redirect, createHashRouter } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { GlobalStyle, Container } from "./globalStyles.style";
 
 const WebPage = () => (
@@ -14,13 +14,13 @@ const WebPage = () => (
 );
 
 function App() {
-  const router = createHashRouter([
-    {
-      path: "/",
-      Component: WebPage,
-    },
-  ]);
-  return <RouterProvider router={router} />;
+  return (
+    <HashRouter basename="/">
+      <Routes>
+        <Route path="/" element={<WebPage />} />
+      </Routes>
+    </HashRouter>
+  );
 }
 
 export default App;

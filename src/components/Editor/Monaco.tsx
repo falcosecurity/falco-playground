@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { setDiagnosticsOptions } from "monaco-yaml";
-import falcoSchema from "./falcoSchema.json";
-import YamlWorker from "./yaml.worker.js?worker";
 import { JSONSchema6 } from "json-schema";
+import * as lzstring from "lz-string";
 
 import Editor from "./monaco.style";
 import { example1, example2, example3 } from "./examples";
 import { monaco, Uri } from "./customMocaco";
 import type { CustomError, Error } from "../Sidebar/falco_output";
+import falcoSchema from "./falcoSchema.json";
+import YamlWorker from "./yaml.worker.js?worker";
+import { useSearchParams } from "react-router-dom";
+import { message } from "antd";
 
 interface monacoProps {
   data?: React.Dispatch<React.SetStateAction<string>>;
@@ -16,6 +19,10 @@ interface monacoProps {
   uploadCode?: string;
   setUploadCode?: React.Dispatch<React.SetStateAction<string>>;
 }
+
+export const decodedYaml = (encodedData: string) => {
+  return lzstring.decompressFromBase64(encodedData);
+};
 
 const Monaco = ({
   data,
@@ -27,6 +34,8 @@ const Monaco = ({
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const [searchParams] = useSearchParams();
+
   const baseURL = `${window.location.protocol}//${window.location.host}`;
   const modelUri = Uri.parse(`${baseURL}/falcoSchema.json`);
   let model: monaco.editor.ITextModel;
@@ -54,12 +63,20 @@ const Monaco = ({
           },
         };
         const localCode = localStorage.getItem("code");
-        if (localCode) {
+        const query = searchParams.get("code");
+        if (query) {
+          message.info("Using Shared code", 5);
+          const code = decodedYaml(query);
+          model = monaco.editor.createModel(code, "yaml", modelUri);
+          data(() => {
+            return decodedYaml(query);
+          });
+        } else if (localCode && !query) {
           model = monaco.editor.createModel(localCode, "yaml", modelUri);
           data(() => {
             return localCode;
           });
-        } else {
+        } else if (!localCode && !query) {
           model = monaco.editor.createModel(example1, "yaml", modelUri);
           data(() => {
             return example1;
