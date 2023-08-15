@@ -132,7 +132,9 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     const urlConstructor = new URLSearchParams();
     const data = encodedYaml(code);
     urlConstructor.append("code", data);
-    const URL = `${window.location.origin}/#/?${urlConstructor.toString()}`;
+    const URL = `${window.location.origin}${
+      window.location.pathname
+    }/#/?${urlConstructor.toString()}`;
     navigator.clipboard.writeText(URL);
     message.success("Coppied URL to clipboard");
   };
