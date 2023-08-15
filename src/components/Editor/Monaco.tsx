@@ -41,15 +41,6 @@ const Monaco = ({
   let model: monaco.editor.ITextModel;
 
   useEffect(() => {
-    const query = searchParams.get("code");
-    if (query) {
-      const code = decodedYaml(query);
-      localStorage.setItem("isShared", "true");
-      localStorage.setItem("code", code);
-    }
-  }, []);
-
-  useEffect(() => {
     if (monacoEL) {
       setEditor((editor) => {
         if (editor) return editor;
@@ -74,16 +65,19 @@ const Monaco = ({
         };
         const localCode = localStorage.getItem("code");
         const shared = localStorage.getItem("isShared");
-        if (shared === "true") {
-          message.success("Using shared code");
-          model = monaco.editor.createModel(localCode, "yaml", modelUri);
-          data(() => {
-            return localCode;
-          });
-          localStorage.setItem("isShared", "false");
+        const query = searchParams.get("code");
+        if (query) {
+          const code = decodedYaml(query);
+          localStorage.setItem("isShared", "true");
+          localStorage.setItem("code", code);
           const originalURL = window.location.origin + window.location.pathname;
+          console.log(originalURL);
           window.location.replace(originalURL);
         } else if (localCode) {
+          if (shared === "true") {
+            message.success("Loading shared code");
+          }
+          localStorage.setItem("isShared", "false");
           model = monaco.editor.createModel(localCode, "yaml", modelUri);
           data(() => {
             return localCode;

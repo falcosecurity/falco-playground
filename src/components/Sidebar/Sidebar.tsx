@@ -134,11 +134,10 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     urlConstructor.append("code", data);
     const URL = `${window.location.origin}${
       window.location.pathname
-    }/#/?${urlConstructor.toString()}`;
+    }#/?${urlConstructor.toString()}`;
     navigator.clipboard.writeText(URL);
     message.success("Coppied URL to clipboard");
   };
-
   useEffect(() => {
     if (code) {
       compileCode();
