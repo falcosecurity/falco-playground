@@ -29,7 +29,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   const [wasm, loading] = useWasm();
   const [falcoOut, setFalcoOut] = useState<string>(null);
   const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
-  const [modal, setModal] = useState({ state: false, content: "" });
+  const [modal, setModal] = useState({ state: false, content: [""] });
   const [messageApi, contextHolder] = message.useMessage();
 
   const handleMenuClick = (items) => {
@@ -62,6 +62,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   };
 
   const compileWithScap = async () => {
+    const scapArr = [];
     if (wasm) {
       const data = await fetch(scap);
       const dataBuf = await data.arrayBuffer();
@@ -69,18 +70,17 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
         new Uint8Array(dataBuf),
         code
       );
-      console.log(jsonLines);
+      setFalcoOut(stdout);
+
       for (const jsonLine of jsonLines.split("\n")) {
         if (jsonLine.length > 0 && jsonLine.startsWith("{")) {
           const falcoAlert = JSON.parse(jsonLine);
-          setModal({
-            state: true,
-            content: JSON.stringify(falcoAlert, null, 10),
-          });
-          console.log(falcoAlert);
+          scapArr.push(JSON.stringify(falcoAlert, null, 10));
         }
       }
-      setFalcoOut(stdout);
+    }
+    if (scapArr.length) {
+      setModal({ state: true, content: scapArr });
     }
   };
 
@@ -155,20 +155,25 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
       {contextHolder}
       <Modal
         open={modal.state}
-        onOk={() => setModal({ state: false, content: "" })}
+        onOk={() => setModal({ ...modal, state: false })}
         onCancel={() => setModal({ ...modal, state: false })}
         destroyOnClose
         title="Scap Results"
         width={1000}
       >
-        <pre
-          style={{
-            overflowY: "scroll",
-            overflowX: "scroll",
-          }}
-        >
-          {modal.content}
-        </pre>
+        {modal.content.map((item, idx) => {
+          return (
+            <pre
+              key={idx}
+              style={{
+                overflowY: "scroll",
+                overflowX: "scroll",
+              }}
+            >
+              {item}
+            </pre>
+          );
+        })}
       </Modal>
       <CtaDiv>
         <Space wrap size="middle">

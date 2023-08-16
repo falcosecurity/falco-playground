@@ -24,6 +24,8 @@ export const decodedYaml = (encodedData: string) => {
   return lzstring.decompressFromBase64(encodedData);
 };
 
+const messageInterval = 5;
+
 const Monaco = ({
   data,
   example,
@@ -39,6 +41,8 @@ const Monaco = ({
   const baseURL = `${window.location.protocol}//${window.location.host}`;
   const modelUri = Uri.parse(`${baseURL}/falcoSchema.json`);
   let model: monaco.editor.ITextModel;
+
+  const originalURL = window.location.origin + window.location.pathname;
 
   useEffect(() => {
     if (monacoEL) {
@@ -67,22 +71,33 @@ const Monaco = ({
         const shared = localStorage.getItem("isShared");
         const query = searchParams.get("code");
         if (query) {
-          const code = decodedYaml(query);
-          localStorage.setItem("isShared", "true");
-          localStorage.setItem("code", code);
-          const originalURL = window.location.origin + window.location.pathname;
-          console.log(originalURL);
-          window.location.replace(originalURL);
-        } else if (localCode) {
-          if (shared === "true") {
-            message.success("Loading shared code");
+          const decodedYamlCode = decodedYaml(query);
+          if (decodedYamlCode) {
+            localStorage.setItem("isShared", "true");
+            localStorage.setItem("code", decodedYamlCode);
+            window.location.replace(originalURL);
+          } else {
+            message.error(
+              "Error loading shared code. URL incorrrect or tampered with"
+            );
+            setInterval(() => {
+              window.location.replace(originalURL);
+            }, 3000);
           }
-          localStorage.setItem("isShared", "false");
+        } else if (localCode) {
+          if (shared == "true") {
+            message.success("Loading shared code", messageInterval);
+            localStorage.setItem("isShared", "false");
+          } else if (shared != "true") {
+            message.success("Loading from local storage", messageInterval);
+          }
+
           model = monaco.editor.createModel(localCode, "yaml", modelUri);
           data(() => {
             return localCode;
           });
         } else {
+          message.success("Loading example", messageInterval);
           model = monaco.editor.createModel(example1, "yaml", modelUri);
           data(() => {
             return example1;
