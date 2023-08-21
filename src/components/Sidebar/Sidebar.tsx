@@ -7,6 +7,7 @@ import {
   UploadOutlined,
   FileOutlined,
   ShareAltOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Space, Upload, Dropdown, message, Modal } from "antd";
@@ -14,6 +15,9 @@ import * as lzstring from "lz-string";
 import useWasm from "../../Hooks/UseWasm";
 import type { FalcoStdOut, Error } from "./falco_output";
 import scap from "/connect_localhost.scap?url";
+import scap2 from "/open-multiple-files.scap?url";
+import scap3 from "/syscall.scap?url";
+
 interface props {
   code: string;
   example: React.Dispatch<React.SetStateAction<string>>;
@@ -38,7 +42,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
       return items.key;
     });
   };
-  const items: MenuProps["items"] = [
+  const exampleItems: MenuProps["items"] = [
     {
       key: "1",
       label: <a>Example 1</a>,
@@ -53,6 +57,41 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     },
   ];
 
+  const handleScapClick = (items) => {
+    switch (items.key) {
+      case "1":
+        message.info("Compiling with connect_localhost.scap");
+        console.log(scap);
+        compileWithScap(scap);
+        break;
+      case "2":
+        message.info("Compiling with open_multiple_files.scap");
+        compileWithScap(scap2);
+        break;
+      case "3":
+        message.info("Syscall.scap");
+        compileWithScap(scap3);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const scapItems: MenuProps["items"] = [
+    {
+      key: "1",
+      label: <a>Connect_localhost.scap</a>,
+    },
+    {
+      key: "2",
+      label: <a>Open_multiple_files.scap</a>,
+    },
+    {
+      key: "3",
+      label: <a>Syscall.scap</a>,
+    },
+  ];
+
   const compileCode = async () => {
     if (wasm) {
       const [jsonOut, stdout] = await wasm.writeFileAndRun("rule.yaml", code);
@@ -61,10 +100,10 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     }
   };
 
-  const compileWithScap = async () => {
+  const compileWithScap = async (scapFile) => {
     const scapArr = [];
     if (wasm) {
-      const data = await fetch(scap);
+      const data = await fetch(scapFile);
       const dataBuf = await data.arrayBuffer();
       const [jsonLines, stdout] = await wasm.compileWithScap(
         new Uint8Array(dataBuf),
@@ -116,6 +155,18 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     };
     reader.readAsText(file);
     return false;
+  };
+
+  const handleScapUpload = () => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target.result) {
+        messageApi.success("Successfully loaded yaml file");
+        compileWithScap(e.target.readAsArrayBuffer);
+      } else {
+        messageApi.error("File is empty or invalid");
+      }
+    };
   };
 
   const handleDownload = () => {
@@ -210,21 +261,29 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             Copy
           </Button>
           <Dropdown
-            menu={{ items, onClick: handleMenuClick }}
+            menu={{ items: exampleItems, onClick: handleMenuClick }}
             placement="bottom"
           >
             <Button icon={<FileOutlined />}>Load Examples</Button>
           </Dropdown>
-
-          <Button onClick={compileWithScap} icon={<PlayCircleFilled />}>
-            Run with scap
-          </Button>
+          <Dropdown menu={{ items: scapItems, onClick: handleScapClick }}>
+            <Button icon={<PlayCircleFilled />}>
+              <Space>
+                Run with Scap
+                <DownOutlined />
+              </Space>
+            </Button>
+          </Dropdown>
           <Button onClick={handleShare} icon={<ShareAltOutlined />}>
             Share
           </Button>
-          <Upload>
+          <Upload
+            accept=".scap"
+            beforeUpload={handleScapUpload}
+            showUploadList={false}
+          >
             <Button disabled icon={<UploadOutlined />}>
-              Upload Scap File
+              Upload scap and run
             </Button>
           </Upload>
         </Space>
