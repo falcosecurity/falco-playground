@@ -269,7 +269,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
           <Dropdown menu={{ items: scapItems, onClick: handleScapClick }}>
             <Button icon={<PlayCircleFilled />}>
               <Space>
-                Run with Scap
+                Run with scap
                 <DownOutlined />
               </Space>
             </Button>
