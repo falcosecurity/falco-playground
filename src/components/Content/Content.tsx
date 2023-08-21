@@ -3,10 +3,9 @@ import { useDebounce } from "../../Hooks/UseDebounce";
 import useWasm from "../../Hooks/UseWasm";
 import type { Error } from "../Sidebar/falco_output";
 
-import { Section, MobileOnlyDiv } from "./content.style";
+import { Section } from "./content.style";
 import Monaco from "../Editor/Monaco";
 import Sidebar from "../Sidebar/Sidebar";
-import { CtaDiv } from "../Sidebar/sidebar.style";
 
 const Content = () => {
   const [code, setCode] = useState<string>("");
@@ -14,7 +13,6 @@ const Content = () => {
   const debouncedCode = useDebounce(code, 800);
   const [uploadCode, setUploadCode] = useState<string>();
   const [falcoJsonErr, setFalcoJsonErr] = useState<Error[]>();
-  const [err, setErr] = useState("");
 
   const [wasm] = useWasm();
 
@@ -22,9 +20,8 @@ const Content = () => {
     const autoSave = async () => {
       try {
         await wasm.writeFileAndRun("rule.yaml", code);
-        setErr("");
       } catch (err) {
-        setErr(err);
+        console.log(err);
       }
     };
     autoSave();

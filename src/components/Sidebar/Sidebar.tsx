@@ -148,7 +148,11 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     errJson(() => {
       return falcoStd?.falco_load_results[0].errors;
     });
-  }, [falcoStd?.falco_load_results[0].errors.length]);
+  }, [
+    falcoStd === undefined
+      ? undefined
+      : Object.values(falcoStd?.falco_load_results[0].errors),
+  ]);
 
   return (
     <SideDiv>
@@ -218,6 +222,11 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
           <Button onClick={handleShare} icon={<ShareAltOutlined />}>
             Share
           </Button>
+          <Upload>
+            <Button disabled icon={<UploadOutlined />}>
+              Upload Scap File
+            </Button>
+          </Upload>
         </Space>
       </CtaDiv>
       {conditionallyRenderTerminal()}

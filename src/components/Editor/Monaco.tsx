@@ -178,7 +178,7 @@ const Monaco = ({
       });
     });
     monaco?.editor.setModelMarkers(editor?.getModel(), "owner", Markerdata);
-  }, [falcoJsonErr?.length]);
+  }, [falcoJsonErr === undefined ? undefined : Object.values(falcoJsonErr)]);
 
   editor?.getModel().onDidChangeContent(() => {
     data(() => {
