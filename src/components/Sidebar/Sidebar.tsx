@@ -62,15 +62,15 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
       case "1":
         message.info("Compiling with connect_localhost.scap");
         console.log(scap);
-        compileWithScap(scap);
+        compileWithScap(scap, "");
         break;
       case "2":
         message.info("Compiling with open_multiple_files.scap");
-        compileWithScap(scap2);
+        compileWithScap(scap2, "");
         break;
       case "3":
         message.info("Syscall.scap");
-        compileWithScap(scap3);
+        compileWithScap(scap3, "");
         break;
       default:
         break;
@@ -100,17 +100,27 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     }
   };
 
-  const compileWithScap = async (scapFile) => {
+  const compileWithScap = async (scapFile, buffer) => {
     const scapArr = [];
     if (wasm) {
       const data = await fetch(scapFile);
       const dataBuf = await data.arrayBuffer();
-      const [jsonLines, stdout] = await wasm.compileWithScap(
-        new Uint8Array(dataBuf),
-        code
-      );
-      setFalcoOut(stdout);
-
+      let jsonLines;
+      if (buffer) {
+        const [jlines, stdout] = await wasm.compileWithScap(
+          new Uint8Array(buffer),
+          code
+        );
+        jsonLines = jlines;
+        setFalcoOut(stdout);
+      } else {
+        const [jlines, stdout] = await wasm.compileWithScap(
+          new Uint8Array(dataBuf),
+          code
+        );
+        jsonLines = jlines;
+        setFalcoOut(stdout);
+      }
       for (const jsonLine of jsonLines.split("\n")) {
         if (jsonLine.length > 0 && jsonLine.startsWith("{")) {
           const falcoAlert = JSON.parse(jsonLine);
@@ -120,6 +130,10 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     }
     if (scapArr.length) {
       setModal({ state: true, content: scapArr });
+    } else {
+      setTimeout(() => {
+        message.info("No events detected from scap file");
+      }, 3000);
     }
   };
 
@@ -157,16 +171,18 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     return false;
   };
 
-  const handleScapUpload = () => {
+  const handleScapUpload = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target.result) {
-        messageApi.success("Successfully loaded yaml file");
-        compileWithScap(e.target.readAsArrayBuffer);
+        messageApi.success(`Compiling with ${file.name}`);
+        compileWithScap("", e.target.result);
       } else {
         messageApi.error("File is empty or invalid");
       }
     };
+    reader.readAsArrayBuffer(file);
+    return false;
   };
 
   const handleDownload = () => {
@@ -282,9 +298,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             beforeUpload={handleScapUpload}
             showUploadList={false}
           >
-            <Button disabled icon={<UploadOutlined />}>
-              Upload scap and run
-            </Button>
+            <Button icon={<UploadOutlined />}>Upload scap and run</Button>
           </Upload>
         </Space>
       </CtaDiv>
