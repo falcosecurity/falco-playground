@@ -22,7 +22,7 @@ describe("Check if page loads succesfully", () => {
     cy.get("button").should("be.enabled").contains("Load Examples");
     cy.get("button").should("be.enabled").contains("Run with scap");
     cy.get("button").should("be.enabled").contains("Share");
-    cy.get("button").should("be.disabled").contains("Upload scap and run");
+    cy.get("button").should("be.enabled").contains("Upload scap and run");
     const date = new Date();
     cy.get(".terminal-success").contains(date.getDate(), { timeout: 25000 });
   });
