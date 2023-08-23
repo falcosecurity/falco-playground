@@ -23,6 +23,15 @@ export const example2 = `- macro: open_read
 - macro: open_file_failed
   condition: (evt.type in (open,openat,openat2) and fd.typechar='f' and fd.num=-1 and evt.res startswith E)
 
+- macro: etc_dir
+  condition: (fd.name startswith /etc/)
+
+- macro: user_ssh_directory
+  condition: (fd.name contains '/.ssh/' and fd.name glob '/home/*/.ssh/*')
+
+- macro: directory_traversal
+  condition: (fd.nameraw contains '../' and fd.nameraw glob '*../*../*')
+
 - rule: Directory traversal monitored file read
   desc: >
     Web applications can be vulnerable to directory traversal attacks that allow accessing files outside of the web app's root directory (e.g. Arbitrary File Read bugs).
@@ -38,7 +47,13 @@ export const example2 = `- macro: open_read
   tags: [host, container, filesystem, mitre_discovery, mitre_exfiltration, mitre_credential_access, T1555, T1212, T1020, T1552, T1083]
 `;
 
-export const example3 = `- macro: open_read
+export const example3 = `- macro: user_ssh_directory
+  condition: (fd.name contains '/.ssh/' and fd.name glob '/home/*/.ssh/*')
+
+- macro: never_true
+  condition: (evt.num=0)
+
+- macro: open_read
   condition: (evt.type in (open,openat,openat2) and evt.is_open_read=true and fd.typechar='f' and fd.num>=0)
 
 - macro: open_directory
