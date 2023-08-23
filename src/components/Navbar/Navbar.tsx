@@ -1,5 +1,6 @@
 import falcoLogo from "../../assets/logo.svg";
 import "./navbar.css";
+import GitHubButton from "react-github-btn";
 
 const Navbar = () => {
   return (
@@ -23,14 +24,14 @@ const Navbar = () => {
           <a href="https://falco.org/about/">About</a>
         </li>
         <li>
-          <iframe
-            src="https://ghbtns.com/github-btn.html?user=rohith-raju&repo=falco-playground&type=star&count=true"
-            frameBorder="0"
-            scrolling="0"
-            width="75"
-            height="20"
-            title="GitHub"
-          ></iframe>
+          <GitHubButton
+            href="https://github.com/rohith-raju/falco-playground"
+            data-size="large"
+            data-show-count="true"
+            aria-label="Star rohith-raju/falco-playground on GitHub"
+          >
+            Star
+          </GitHubButton>
         </li>
       </ul>
     </section>
