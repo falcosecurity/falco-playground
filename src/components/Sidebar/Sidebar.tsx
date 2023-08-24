@@ -257,7 +257,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             Run
           </Button>
           <Upload
-            accept=".yaml"
+            accept=".yaml,.yml"
             beforeUpload={handleUpload}
             showUploadList={false}
           >
