@@ -25,10 +25,10 @@ const Navbar = () => {
         </li>
         <li>
           <GitHubButton
-            href="https://github.com/rohith-raju/falco-playground"
+            href="https://github.com/falcosecurity/falco-playground"
             data-size="large"
             data-show-count="true"
-            aria-label="Star rohith-raju/falco-playground on GitHub"
+            aria-label="Star falcosecurity/falco-playground on GitHub"
           >
             Star
           </GitHubButton>
