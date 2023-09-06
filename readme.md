@@ -27,16 +27,16 @@ npm install
 Since `falco-playground` uses WebAssembly, it relies on a `.wasm` file linked to a `.js` file. You can find the `falco.js` and `falco.wasm` in the lastest **completed** `ci` build of falco.
 
 1. Go to https://github.com/falcosecurity/falco/actions/workflows/ci.yml
-2. Select a **sucessfull** workflow.
+2. Select a **sucessful** workflow.
 3. Download the `falco-*-wasm.tar.gz` in the **Artifact** section below.
 
 ### Move `falco.wasm` and `falco.js` files into desired location
 
 Since WebAssembly files (`.wasm`) can't be transpiled by the bundler, we need to ensure they remain static. To achieve this, we should relocate the `falco.wasm` file to the `public` directory. Additionally, for the application to interact with falco.wasm effectively, we should move `falco.js` to the `hooks` directory.
 
-After extracting `falco-*-wasm.tar.gz`, `falco.js` and `falco.wasm` can be found at `/usr/bin`.
+After extracting `falco-*-wasm.tar.gz`, `falco.js` and `falco.wasm` can be found at `falco-*-wasm/usr/bin`.
 
-1. Move `falco.wasm` into `falco-playground/public`
+1. Move `falco.wasm` into `public`
 2. Move `falco.js` into `src/Hooks`
 
 ### Start development server
