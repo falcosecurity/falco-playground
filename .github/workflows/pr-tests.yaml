@@ -1,0 +1,21 @@
+name: Cypress Test
+
+on:
+  pull_request:
+    branches:
+      - "main"
+    types: [opened, reopened]
+
+jobs:
+  test:
+    runs-on: cypress/base:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          wait-on: http://localhost:5173
+          start: npx vite --host
