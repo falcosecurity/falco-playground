@@ -1,0 +1,14 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  download_artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: "Download artifacts from falcosecurity/falco's CI Build Workflow"
+      uses: Legit-Labs/action-download-artifact@v2.18.0
+      with:
+        github_token: ${{ github.token }}
+        workflow: "CI Build"
+        repo:  falcosecurity/falco
