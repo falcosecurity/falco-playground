@@ -19,7 +19,7 @@ const Content = () => {
   useEffect(() => {
     const autoSave = async () => {
       try {
-        await wasm.writeFileAndRun("rule.yaml", code);
+        await wasm?.writeFileAndRun("rule.yaml", code);
       } catch (err) {
         console.log(err);
       }
