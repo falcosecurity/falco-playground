@@ -1,0 +1,46 @@
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  download_artifact:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: assets
+        path: br-assets
+
+    - name: Download artifacts from falco
+      uses: dawidd6/action-download-artifact@v2.28.0
+      with:
+        github_token: ${{ github.token }}
+        workflow: 26039754
+        repo: falcosecurity/falco
+        workflow_conclusion: success
+        name: falco-\d+\.\d+\.\d+-\d+\+[a-f0-9]+-wasm.tar.gz
+        name_is_regexp: true
+
+    - name: Extract artifact
+      run: tar -xvf falco-*-wasm.tar.gz/falco-*-wasm.tar.gz
+
+    - name: Setup fs
+      run: |
+        mkdir -p br-assets/falco_artifact-latest/
+        mkdir -p br-assets/falco_artifact-latest/public/
+        mkdir -p br-assets/falco_artifact-latest/src/Hooks/
+
+    - name: Move artifacts
+      run: |
+        mv falco-*-wasm/usr/bin/falco.wasm br-assets/falco_artifact-latest/public/falco.wasm
+        mv falco-*-wasm/usr/bin/falco.js br-assets/falco_artifact-latest/src/Hooks/falco.js
+
+    - run: |
+        cd br-assets
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add falco_artifact-latest/public/* falco_artifact-latest/src/Hooks/*
+        git commit -m "Update assets"
+        git push

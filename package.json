@@ -13,7 +13,8 @@
     "cy:run": "cypress run",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "fix": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --fix",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "get-assets": "sh scripts/get-assets.sh"
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
