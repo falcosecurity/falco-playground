@@ -17,7 +17,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v2.28.0
       with:
         github_token: ${{ github.token }}
-        workflow: 26039754
+        workflow: "ci.yml"  # 26039754
         repo: falcosecurity/falco
         workflow_conclusion: success
         name: falco-\d+\.\d+\.\d+-\d+\+[a-f0-9]+-wasm.tar.gz
@@ -28,19 +28,34 @@ jobs:
 
     - name: Setup fs
       run: |
-        mkdir -p br-assets/falco_artifact-latest/
-        mkdir -p br-assets/falco_artifact-latest/public/
-        mkdir -p br-assets/falco_artifact-latest/src/Hooks/
+        FOLDER_NAME=$(find . -type d -name "falco-*-wasm" -print -quit)
+
+        VERSION=$(echo $FOLDER_NAME | sed -E 's/^.+falco-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+        echo $VERSION
+
+        mkdir -p br-assets/$VERSION/
+        echo $VERSION > br-assets/latest.txt
 
     - name: Move artifacts
       run: |
-        mv falco-*-wasm/usr/bin/falco.wasm br-assets/falco_artifact-latest/public/falco.wasm
-        mv falco-*-wasm/usr/bin/falco.js br-assets/falco_artifact-latest/src/Hooks/falco.js
+        VERSION=`cat br-assets/latest.txt`
+        echo $VERSION
 
-    - run: |
+        mv falco-*-wasm/usr/bin/falco.wasm br-assets/$VERSION/falco.wasm
+        mv falco-*-wasm/usr/bin/falco.js br-assets/$VERSION/falco.js
+
+        ls br-assets/$VERSION/
+
+    - name: Push
+      run: |
         cd br-assets
+
+        VERSION=`cat latest.txt`
+        echo $VERSION
+        ls $VERSION
+
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git add falco_artifact-latest/public/* falco_artifact-latest/src/Hooks/*
+        git add $VERSION/falco.wasm $VERSION/falco.js latest.txt
         git commit -m "Update assets"
         git push
