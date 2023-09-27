@@ -203,7 +203,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
       window.location.pathname
     }#/?${urlConstructor.toString()}`;
     navigator.clipboard.writeText(URL);
-    message.success("Coppied URL to clipboard");
+    message.success("Copied URL to clipboard");
   };
   useEffect(() => {
     if (code) {
@@ -268,7 +268,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
           </Button>
           <Button
             onClick={() => {
-              messageApi.success("Code coppied to clipboard");
+              messageApi.success("Code copied to clipboard");
               navigator.clipboard.writeText(code);
             }}
             block
