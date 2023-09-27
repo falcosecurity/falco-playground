@@ -10,14 +10,33 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: assets
+        ref: main
         path: br-assets
+
+    - run: |
+        cd br-assets
+
+        git checkout --orphan assets
+        git rm -rf .
+
+        git pull origin assets || true
+
+        echo "# Downloadable Assets" > README.md
+        git add .
+
+        git config user.name github-actions
+        git config user.email github-actions@github.co
+
+        git diff-index --quiet HEAD || git commit -m "Initial commit"
+        git push --set-upstream origin assets
+
+        cd ..
 
     - name: Download artifacts from falco
       uses: dawidd6/action-download-artifact@v2.28.0
       with:
         github_token: ${{ github.token }}
-        workflow: "ci.yml"  # 26039754
+        workflow: "ci.yml" # 26039754
         repo: falcosecurity/falco
         workflow_conclusion: success
         name: falco-\d+\.\d+\.\d+-\d+\+[a-f0-9]+-wasm.tar.gz
@@ -51,11 +70,9 @@ jobs:
         cd br-assets
 
         VERSION=`cat latest.txt`
-        echo $VERSION
-        ls $VERSION
+        echo $VERSION; ls $VERSION
 
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add $VERSION/falco.wasm $VERSION/falco.js latest.txt
-        git commit -m "Update assets"
+        git add .
+        git diff-index --quiet HEAD || git commit -m "$VERSION"
+
         git push
