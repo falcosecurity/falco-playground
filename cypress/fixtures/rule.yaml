@@ -1,0 +1,28 @@
+- macro: user_ssh_directory
+  condition: (fd.name contains '/.ssh/' and fd.name glob '/home/*/.ssh/*')
+
+- macro: never_true
+  condition: (evt.num=0)
+
+- macro: open_read
+  condition: (evt.type in (open,openat,openat2) and evt.is_open_read=true and fd.typechar='f' and fd.num>=0)
+
+- macro: open_directory
+  condition: (evt.type in (open,openat,openat2) and evt.is_open_read=true and fd.typechar='d' and fd.num>=0)
+
+- macro: user_known_read_ssh_information_activities
+  condition: (never_true)
+
+- rule: Read ssh information
+  desc: Any attempt to read files below ssh directories by non-ssh programs
+  condition: >
+    ((open_read or open_directory) and
+     (user_ssh_directory or fd.name startswith /root/.ssh) and
+     not user_known_read_ssh_information_activities and
+     not proc.name in (ssh_binaries))
+  enabled: false
+  output: >
+    ssh-related file/directory read by non-ssh program (user=%user.name user_loginuid=%user.loginuid
+    command=%proc.cmdline pid=%proc.pid file=%fd.name parent=%proc.pname pcmdline=%proc.pcmdline container_id=%container.id image=%container.image.repository)
+  priority: ERROR
+  tags: [host, container, filesystem, mitre_discovery, T1005]
