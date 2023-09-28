@@ -1,3 +1,5 @@
+import "cypress-file-upload";
+
 describe("Page Loading and Functionality Tests", () => {
   beforeEach(() => {
     // Load the home page before each test
@@ -37,7 +39,7 @@ describe("Page Loading and Functionality Tests", () => {
 
     // Check if the terminal contains the current date
     const date = new Date();
-    cy.get(".terminal-success").contains(date.getDate(), { timeout: 25000 });
+    cy.get(".terminal-success").contains(date.getDate(), {timeout: 25000});
   });
 
   it("download 'rule.yaml' when 'Download' button is clicked", () => {
@@ -86,5 +88,33 @@ describe("Page Loading and Functionality Tests", () => {
 
     // Check that a success message is displayed (assuming it's shown)
     cy.contains("Copied URL to clipboard").should("exist"); // Replace with your message selector
+  });
+
+  // Test: Import a YAML file and verify that the editor is populated with the YAML content
+  it("import a YAML file and verify that the editor is populated", () => {
+
+    // Wait for the button to become visible and then click it
+    cy.get("button:contains('Import Yaml')")
+      .should("be.visible")
+      .click();
+
+    // Upload the file
+    cy.get("input[type='file']").as("fileUpload");
+    cy.fixture("rule.yaml").then((fileContent) => {
+      cy.get("@fileUpload").attachFile({
+        fileContent: fileContent.toString(),
+        fileName: "rule.yaml",
+        mimeType: "application/yaml",
+      });
+    });
+
+    // Wait for the editor to load and check if it's not empty
+    cy.get(".monaco-editor")
+      .should("be.visible") // Ensure the editor is visible
+      .then(($editor) => {
+        // Get the text content of the editor and assert that it's not empty
+        const editorText = $editor.text();
+        expect(editorText).not.to.be.empty;
+      });
   });
 });
