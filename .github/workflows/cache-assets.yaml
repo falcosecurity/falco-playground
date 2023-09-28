@@ -7,72 +7,80 @@ on:
 jobs:
   download_artifact:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-      with:
-        ref: main
-        path: br-assets
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: br-assets
 
-    - run: |
-        cd br-assets
+      # branch setup steps: download main branch > create orphan branch assets > remove all tracked files > git pull origin/assets
+      - run: |
+          cd br-assets
 
-        git checkout --orphan assets
-        git rm -rf .
+          git checkout --orphan assets
 
-        git pull origin assets || true
+          : # First delete all files and then pull from assets branch
 
-        echo "# Downloadable Assets" > README.md
-        git add .
+          git rm -rf .
+          git pull origin assets || true
 
-        git config user.name github-actions
-        git config user.email github-actions@github.co
+          echo "# Downloadable Assets" > README.md
+          git add .
 
-        git diff-index --quiet HEAD || git commit -m "Initial commit"
-        git push --set-upstream origin assets
+          git config user.name github-actions
+          git config user.email github-actions@github.co
 
-        cd ..
+          : # Avoid committing if no file is changed
 
-    - name: Download artifacts from falco
-      uses: dawidd6/action-download-artifact@v2.28.0
-      with:
-        github_token: ${{ github.token }}
-        workflow: "ci.yml" # 26039754
-        repo: falcosecurity/falco
-        workflow_conclusion: success
-        name: falco-\d+\.\d+\.\d+-\d+\+[a-f0-9]+-wasm.tar.gz
-        name_is_regexp: true
+          git diff-index --quiet HEAD || git commit -m "Initial commit"
+          git push --set-upstream origin assets
 
-    - name: Extract artifact
-      run: tar -xvf falco-*-wasm.tar.gz/falco-*-wasm.tar.gz
+          cd ..
 
-    - name: Setup fs
-      run: |
-        FOLDER_NAME=$(find . -type d -name "falco-*-wasm" -print -quit)
+      - name: Download artifacts from falco
+        uses: dawidd6/action-download-artifact@v2.28.0
+        with:
+          github_token: ${{ github.token }}
+          workflow: "ci.yml"
+          repo: falcosecurity/falco
+          workflow_conclusion: success
+          name: falco-\d+\.\d+\.\d+-\d+\+[a-f0-9]+-wasm.tar.gz
+          name_is_regexp: true
 
-        VERSION=$(echo $FOLDER_NAME | sed -E 's/^.+falco-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-        echo $VERSION
+      - name: Extract artifact
+        run: tar -xvf falco-*-wasm.tar.gz/falco-*-wasm.tar.gz
 
-        mkdir -p br-assets/$VERSION/
-        echo $VERSION > br-assets/latest.txt
+      - name: Setup fs
+        run: |
+          FOLDER_NAME=$(find . -type d -name "falco-*-wasm" -print -quit)
 
-    - name: Move artifacts
-      run: |
-        VERSION=`cat br-assets/latest.txt`
-        echo $VERSION
+          VERSION=$(echo $FOLDER_NAME | sed -E 's/^.+falco-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          echo $VERSION
 
-        mv falco-*-wasm/usr/bin/falco.wasm br-assets/$VERSION/falco.wasm
-        mv falco-*-wasm/usr/bin/falco.js br-assets/$VERSION/falco.js
+          mkdir -p br-assets/$VERSION/
+          echo $VERSION > br-assets/latest.txt
 
-        ls br-assets/$VERSION/
+      - name: Move artifacts
+        run: |
+          VERSION=`cat br-assets/latest.txt`
+          echo $VERSION
 
-    - name: Push
-      run: |
-        cd br-assets
+          mv falco-*-wasm/usr/bin/falco.wasm br-assets/$VERSION/falco.wasm
+          mv falco-*-wasm/usr/bin/falco.js br-assets/$VERSION/falco.js
 
-        VERSION=`cat latest.txt`
-        echo $VERSION; ls $VERSION
+          ls br-assets/$VERSION/
 
-        git add .
-        git diff-index --quiet HEAD || git commit -m "$VERSION"
+      - name: Push
+        run: |
+          cd br-assets
 
-        git push
+          VERSION=`cat latest.txt`
+          echo $VERSION; ls $VERSION
+
+          git add .
+
+          : # Avoid committing if no file is changed
+          git diff-index --quiet HEAD || git commit -m "$VERSION"
+
+          git push
