@@ -48,7 +48,6 @@ describe("Page Loading and Functionality Tests", () => {
     cy.get("button:contains('Download')").click();
     cy.get("a[download='rule.yaml']").should("exist");
 
-    // Assuming you have configured 'downloadsFolder' in your Cypress configuration
     const downloadsFolder = Cypress.config("downloadsFolder");
 
     // Check if any file with the '.yaml' extension exists in the downloads folder
