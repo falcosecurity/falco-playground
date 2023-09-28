@@ -5,7 +5,7 @@ describe("Page Loading and Functionality Tests", () => {
   });
 
   // Test: Navigate to different sections via navigation bars
-  it("should check for navigation bars", () => {
+  it("check for navigation bars", () => {
     // Verify that navigation bars exist
     cy.contains("Blog");
     cy.contains("Docs");
@@ -14,12 +14,12 @@ describe("Page Loading and Functionality Tests", () => {
   });
 
   // Test: Verify the presence of Monaco Editor
-  it("should validate the presence of Monaco Editor", () => {
+  it("validate the presence of Monaco Editor", () => {
     cy.get(".monaco-editor").should("exist");
   });
 
   // Test: Verify button states, and check the terminal for the current date
-  it("should check for the presence of Buttons and Terminal", () => {
+  it("check for the presence of Buttons and Terminal", () => {
     const buttons = [
       "Run",
       "Import Yaml",
@@ -44,20 +44,27 @@ describe("Page Loading and Functionality Tests", () => {
   });
 
   // Test: Download 'rule.yaml' when 'Download' button is clicked
-  it("should download 'rule.yaml' when 'Download' button is clicked", () => {
+  it("download 'rule.yaml' when 'Download' button is clicked", () => {
     cy.get("button:contains('Download')").click();
     cy.get("a[download='rule.yaml']").should("exist");
+
+    // Assuming you have configured 'downloadsFolder' in your Cypress configuration
+    const downloadsFolder = Cypress.config("downloadsFolder");
+
+    // Check if any file with the '.yaml' extension exists in the downloads folder
+    cy.readFile(`${downloadsFolder}/rule.yaml`).should("exist");
   });
 
+
   // Test: Load examples and verify that 'Example 1' is displayed
-  it("should load examples and verify that 'Example 1' is displayed", () => {
+  it("load examples and verify that 'Example 1' is displayed", () => {
     cy.get("button:contains('Load Examples')").click();
     cy.contains("Example 1").click();
     cy.get(".monaco-editor").should("not.be.empty");
   });
 
   // Test: Copy the correct URL to the clipboard when 'Share' is triggered and load 'Example 1'
-  it("should copy the correct URL to the clipboard when 'Share' is triggered and load 'Example 1'", () => {
+  it("copy the correct URL to the clipboard when 'Share' is triggered and load 'Example 1'", () => {
     // Define the expected URL based on your component's behavior
     cy.get("button:contains('Load Examples')").click();
     cy.contains("Example 1").click();
@@ -75,6 +82,12 @@ describe("Page Loading and Functionality Tests", () => {
 
     // Trigger the 'Share' functionality by clicking the "Share" button
     cy.contains("Share").click();
+
+    cy.window().then((win) => {
+      win.navigator.clipboard.readText().then((text) => {
+        expect(text).to.eq(expectedURL);
+      });
+    });
 
     // Check that a success message is displayed (assuming it's shown)
     cy.contains("Copied URL to clipboard").should("exist"); // Replace with your message selector
