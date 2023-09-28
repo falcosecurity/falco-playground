@@ -11,32 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: assets
           path: br-assets
-
-      # branch setup steps: download main branch > create orphan branch assets > remove all tracked files > git pull origin/assets
-      - run: |
-          cd br-assets
-
-          git checkout --orphan assets
-
-          : # First delete all files and then pull from assets branch
-
-          git rm -rf .
-          git pull origin assets || true
-
-          echo "# Downloadable Assets" > README.md
-          git add .
-
-          git config user.name github-actions
-          git config user.email github-actions@github.co
-
-          : # Avoid committing if no file is changed
-
-          git diff-index --quiet HEAD || git commit -m "Initial commit"
-          git push --set-upstream origin assets
-
-          cd ..
 
       - name: Download artifacts from falco
         uses: dawidd6/action-download-artifact@v2.28.0
@@ -51,7 +27,7 @@ jobs:
       - name: Extract artifact
         run: tar -xvf falco-*-wasm.tar.gz/falco-*-wasm.tar.gz
 
-      - name: Setup fs
+      - name: Setup branch's directory structure
         run: |
           FOLDER_NAME=$(find . -type d -name "falco-*-wasm" -print -quit)
 
@@ -59,6 +35,9 @@ jobs:
           echo $VERSION
 
           mkdir -p br-assets/$VERSION/
+
+          : # Save latest VERSION into latest.txt to download easy
+
           echo $VERSION > br-assets/latest.txt
 
       - name: Move artifacts
@@ -71,7 +50,7 @@ jobs:
 
           ls br-assets/$VERSION/
 
-      - name: Push
+      - name: Push to origin/assets
         run: |
           cd br-assets
 
@@ -81,6 +60,10 @@ jobs:
           git add .
 
           : # Avoid committing if no file is changed
+
+          git config user.name github-actions
+          git config user.email github-actions@github.co
+
           git diff-index --quiet HEAD || git commit -m "$VERSION"
 
           git push
