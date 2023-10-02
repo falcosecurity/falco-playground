@@ -58,5 +58,5 @@ npm run cy:open
 ### Using cypress with CLI
 
 ```
-npm run cy:test
+npm run cy:run
 ```
