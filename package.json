@@ -30,7 +30,8 @@
     "react-github-btn": "^1.4.0",
     "react-resize-detector": "^9.1.0",
     "react-router-dom": "^6.15.0",
-    "styled-components": "^6.0.3"
+    "styled-components": "^6.0.3",
+    "ws": "^8.14.2"
   },
   "resolutions": {
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
