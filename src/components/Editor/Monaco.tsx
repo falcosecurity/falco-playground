@@ -8,7 +8,6 @@ import { example1, example2, example3 } from "./examples";
 import { monaco, Uri } from "./customMocaco";
 import type { CustomError, Error } from "../Sidebar/falco_output";
 import falcoSchema from "./falcoSchema.json";
-import YamlWorker from "./yaml.worker.js?worker";
 import { useSearchParams } from "react-router-dom";
 import { message } from "antd";
 
@@ -62,11 +61,6 @@ const Monaco = ({
             },
           ],
         });
-        window.MonacoEnvironment = {
-          getWorker() {
-            return new YamlWorker();
-          },
-        };
         const localCode = localStorage.getItem("code");
         const shared = localStorage.getItem("isShared");
         const query = searchParams.get("code");
