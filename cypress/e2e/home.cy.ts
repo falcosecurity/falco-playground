@@ -39,7 +39,7 @@ describe("Page Loading and Functionality Tests", () => {
 
     // Check if the terminal contains the current date
     const date = new Date();
-    cy.get(".terminal-success").contains(date.getDate(), {timeout: 25000});
+    cy.get(".terminal-success").contains(date.getDate(), { timeout: 25000 });
   });
 
   it("download 'rule.yaml' when 'Download' button is clicked", () => {
