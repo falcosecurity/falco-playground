@@ -37,11 +37,6 @@ jobs:
       - name: Remove Unwanted Artifacts
         run: rm -rf falco-*-wasm.tar.gz falco-*-wasm
 
-      - name: Fix falco.js export
-        run: |
-          sudo apt install -y perl
-          perl -i -p0e  "s/(if \(typeof exports === 'object' && typeof module === 'object'\))[\s\S]*/export default Module;/g" ./src/Hooks/falco.js
-
       - name: Test
         uses: cypress-io/github-action@v5
         with:
@@ -49,7 +44,7 @@ jobs:
           start: npx vite --host
 
       - name: Install and build
-        run: npm install && npm run build && cd dist && rm -rf monacoeditorwork
+        run: npm install && npm run build
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.1
