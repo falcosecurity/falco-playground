@@ -32,11 +32,6 @@ jobs:
       - name: Remove Unwanted Artifacts
         run: rm -rf falco-*-wasm.tar.gz falco-*-wasm
 
-      - name: Fix falco.js export
-        run: |
-          sudo apt install -y perl
-          perl -i -p0e  "s/(if \(typeof exports === 'object' && typeof module === 'object'\))[\s\S]*/export default Module;/g" ./src/Hooks/falco.js
-
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
