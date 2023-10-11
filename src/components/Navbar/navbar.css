@@ -91,6 +91,9 @@
   .menu-button-container {
     display: flex;
   }
+  .menu li a:checked ,:target,:active{
+    color:white;
+  }
   .menu {
     position: absolute;
     top: 0;
