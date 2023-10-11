@@ -91,7 +91,7 @@
   .menu-button-container {
     display: flex;
   }
-  .menu li a:checked ,:target,:active{
+  .menu li a:checked {
     color:white;
   }
   .menu {
