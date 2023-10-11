@@ -36,6 +36,9 @@ import scap from "/connect_localhost.scap?url";
 import scap2 from "/open-multiple-files.scap?url";
 import scap3 from "/syscall.scap?url";
 
+const MAX_RULES_THRESHOLD = 1000;
+const MAX_URL_LENGTH = 2000;
+
 interface props {
   code: string;
   example: React.Dispatch<React.SetStateAction<string>>;
@@ -214,15 +217,25 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
   };
 
   const handleShare = () => {
+    if (code.length >= MAX_RULES_THRESHOLD) {
+      alert("You have reached the maximum number of rules. Sharing may not work as expected.");
+      return;
+    }
+  
     const urlConstructor = new URLSearchParams();
     const data = encodedYaml(code);
     urlConstructor.append("code", data);
-    const URL = `${window.location.origin}${
-      window.location.pathname
-    }#/?${urlConstructor.toString()}`;
+    const URL = `${window.location.origin}${window.location.pathname}#/?${urlConstructor.toString()}`;
+  
+    if (URL.length >= MAX_URL_LENGTH) {
+      alert("The generated URL is too long. Sharing may not work as expected.");
+      return;
+    }
+  
     navigator.clipboard.writeText(URL);
     message.success("Copied URL to clipboard");
   };
+  
   useEffect(() => {
     if (code) {
       compileCode();
