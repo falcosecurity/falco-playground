@@ -94,6 +94,9 @@ describe("Page Loading and Functionality Tests", () => {
       return Promise.resolve();
     });
 
+    cy.on("uncaught:exception", () => {
+      return false;
+    });
     // Trigger the 'Share' functionality by clicking the "Share" button
     cy.contains("Share").click();
 
@@ -105,7 +108,49 @@ describe("Page Loading and Functionality Tests", () => {
     });
 
     // Check that a success message is displayed (assuming it's shown)
-    cy.contains("Copied URL to clipboard").should("exist"); // Replace with your message selector
+    cy.contains("Copied URL to clipboard").should("exist");
+  });
+
+  // Test: Displays an error message when 'Share' is triggered and the maximum number of rules has been reached
+  it("displays an error message when 'Share' is triggered and the maximum number of rules has been reached", () => {
+    const example1URL = "LQAgtghgxgTg9gLhHADgUwHYH0ZogEwCgQQo4N8BLAF0vKQAo0A3agOmoE90RKMQGqTABohGCNVHpx1AEwBKEBAogW7SgGcsYnHnwBeajACuaJSoBm%2BDtzRQAFhBj6A5BZfn8IK2wzGwAHz6AAzyhISgJgA2aEgASnogAMr2aFFRIADC5BaUAObGMBJ0%2FABilDHEIPhoGlBIACJo1HbUStQtYCjUGiDUcCC4BCAaqemkOfmFxeTeFbUgAEacIBjkwKNpGSjweUVgGlVkFDQlSAFVJDpDXspEJCQMPrkx4mBmfAKb6VjHuXlYF6YCDvDSKOAwS4kHxvD78BjfKK%2FSYAoFg5CQh7Q6xUXBQfowFafBFjJF%2FfJYXGtCGUWryRR3KEMNZtHZwKC%2BEFwr6krCLPhOWlgsIkYGLGL4JAWCBRDRoKpwYzUFBK85QiAjUkTDD%2Faa0WZAkAAdwgvRuSxWGrWGA2WrZexBAmMcucAFJnWgYJz3iAPTAsFE4Hk%2BMZKAZ3S62IHg34wxMwJAKPpXWyOVAwPgonwzCgw8nU2xc14gcmYVztdQINn%2FXnXcdK9W2HHKJA8mhk%2FWqxhPU3W2g2LgUHANDQIZwRSAdnQYDROAgoQB1ACCcQAcgBJVcAcSqlbyGiQAG17MPJBWu57hHMYhpOBpOlewDRcJTNGRmJ7OFeACoARgArAALAAbGwwTBIBAC6hBAA%3D%3D";
+    const expectedURL = `${Cypress.config().baseUrl}#/?code=${example1URL}`;
+
+    cy.on("uncaught:exception", () => {
+      return false;
+    });
+
+    cy.contains("Share").click();
+
+    cy.window().then((win) => {
+      win.navigator.clipboard.readText().then((text) => {
+        expect(text).to.eq(expectedURL);
+      });
+    });
+    cy.contains("You have reached the maximum number of rules that can be shared. Please split them").should("not.exist");
+  });
+
+  // Test: Displays an error message when 'Share' is triggered and the rule file is too long
+  it("displays an error message when 'Share' is triggered and the rule file is too long", () => {
+    const example1URL = "LQAgtghgxgTg9gLhHADgUwHYH0ZogEwCgQQo4N8BLAF0vKQAo0A3agOmoE90RKMQGqTABohGCNVHpx1AEwBKEBAogW7SgGcsYnHnwBeajACuaJSoBm%2BDtzRQAFhBj6A5BZfn8IK2wzGwAHz6AAzyhISgJgA2aEgASnogAMr2aFFRIADC5BaUAObGMBJ0%2FABilDHEIPhoGlBIACJo1HbUStQtYCjUGiDUcCC4BCAaqemkOfmFxeTeFbUgAEacIBjkwKNpGSjweUVgGlVkFDQlSAFVJDpDXspEJCQMPrkx4mBmfAKb6VjHuXlYF6YCDvDSKOAwS4kHxvD78BjfKK%2FSYAoFg5CQh7Q6xUXBQfowFafBFjJF%2FfJYXGtCGUWryRR3KEMNZtHZwKC%2BEFwr6krCLPhOWlgsIkYGLGL4JAWCBRDRoKpwYzUFBK85QiAjUkTDD%2Faa0WZAkAAdwgvRuSxWGrWGA2WrZexBAmMcucAFJnWgYJz3iAPTAsFE4Hk%2BMZKAZ3S62IHg34wxMwJAKPpXWyOVAwPgonwzCgw8nU2xc14gcmYVztdQINn%2FXnXcdK9W2HHKJA8mhk%2FWqxhPU3W2g2LgUHANDQIZwRSAdnQYDROAgoQB1ACCcQAcgBJVcAcSqlbyGiQAG17MPJBWu57hHMYhpOBpOlewDRcJTNGRmJ7OFeACoARgArAALAAbGwwTBIBAC6hBAA%3D%3D";
+    const expectedURL = `${Cypress.config().baseUrl}#/?code=${example1URL}`;
+    const urlLength = expectedURL.length;
+    const MAX_URL_LENGTH = 5000;
+  
+    cy.stub(navigator.clipboard, "writeText").callsFake((text) => {
+      if (urlLength > MAX_URL_LENGTH) {
+        expect(text).to.not.contain("#/?code=");
+        cy.contains("Failed to generate URL as the URL is too long.").should("exist");
+      } else {
+        expect(text).to.eq(expectedURL);
+      }
+      return Promise.resolve();
+    });
+  
+    cy.on("uncaught:exception", () => {
+      return false;
+    });
+    cy.get("button:contains('Share')").click();
   });
 
   // Test: Import a YAML file and verify that the editor is populated with the YAML content
