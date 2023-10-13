@@ -218,7 +218,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
 
   const handleShare = () => {
     if (code.length >= MAX_RULES_THRESHOLD) {
-      message.error("You have reached the maximum number of rules.");
+      message.error("You have reached the maximum number of rules that can be shared. Please split them");
       return;
     }
   
@@ -228,7 +228,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     const URL = `${window.location.origin}${window.location.pathname}#/?${urlConstructor.toString()}`;
   
     if (URL.length >= MAX_URL_LENGTH) {
-      message.error("The generated URL is too long.");
+      message.error("Failed to generate URL as the rule file is too long.");
       return;
     }
   
