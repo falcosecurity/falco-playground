@@ -17,6 +17,10 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
+    "@fortawesome/fontawesome-svg-core": "^6.4.2",
+    "@fortawesome/free-brands-svg-icons": "^6.4.2",
+    "@fortawesome/free-solid-svg-icons": "^6.4.2",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@types/emscripten": "^1.39.6",
     "antd": "^5.7.0",
     "cypress": "^13.3.0",
@@ -31,6 +35,7 @@
     "react-resize-detector": "^9.1.0",
     "react-router-dom": "^6.15.0",
     "styled-components": "^6.0.3",
+    "use-local-storage": "^3.0.0",
     "ws": "^8.14.2"
   },
   "resolutions": {
