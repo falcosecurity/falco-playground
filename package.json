@@ -35,7 +35,10 @@
     "react-resize-detector": "^9.1.0",
     "react-router-dom": "^6.15.0",
     "styled-components": "^6.0.3",
+<<<<<<< HEAD
     "use-local-storage": "^3.0.0",
+=======
+>>>>>>> af45667fb6e920b183b114a245db433b6ab09b60
     "ws": "^8.14.2"
   },
   "resolutions": {
