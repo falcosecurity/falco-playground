@@ -55,7 +55,7 @@ body {
 }
 
 .menu>li>a:hover {
-  color: var(--background);
+  color: var(--color);
   ;
 }
 
