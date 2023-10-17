@@ -35,6 +35,7 @@ import type { FalcoStdOut, Error } from "./falco_output";
 import scap from "/connect_localhost.scap?url";
 import scap2 from "/open-multiple-files.scap?url";
 import scap3 from "/syscall.scap?url";
+import "./sidebar.css";
 
 interface props {
   code: string;
@@ -160,7 +161,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
       return <SpinDiv size="large" />;
     } else if (falcoStd.falco_load_results[0].successful) {
       return (
-        <ErrorDiv className="terminal-success">
+        <ErrorDiv className="terminal-success ">
           <p>{falcoOut}</p>
         </ErrorDiv>
       );
@@ -217,8 +218,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     const urlConstructor = new URLSearchParams();
     const data = encodedYaml(code);
     urlConstructor.append("code", data);
-    const URL = `${window.location.origin}${
-      window.location.pathname
+    const URL = `${window.location.origin}${window.location.pathname
     }#/?${urlConstructor.toString()}`;
     navigator.clipboard.writeText(URL);
     message.success("Copied URL to clipboard");
@@ -271,6 +271,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             icon={<PlayCircleFilled />}
             type="primary"
             size="large"
+
           >
             Run
           </Button>
@@ -279,12 +280,12 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             beforeUpload={handleUpload}
             showUploadList={false}
           >
-            <Button icon={<UploadOutlined />}>Import Yaml</Button>
+            <Button className="btn" icon={<UploadOutlined />}>Import Yaml</Button>
           </Upload>
-          <Button onClick={handleDownload} block icon={<DownloadOutlined />}>
+          <Button className="btn" onClick={handleDownload} block icon={<DownloadOutlined />}>
             Download
           </Button>
-          <Button
+          <Button className="btn"
             onClick={() => {
               messageApi.success("Code copied to clipboard");
               navigator.clipboard.writeText(code);
@@ -294,21 +295,21 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
           >
             Copy
           </Button>
-          <Dropdown
+          <Dropdown className="btn"
             menu={{ items: exampleItems, onClick: handleMenuClick }}
             placement="bottom"
           >
-            <Button icon={<FileOutlined />}>Load Examples</Button>
+            <Button className="btn" icon={<FileOutlined />}>Load Examples</Button>
           </Dropdown>
           <Dropdown menu={{ items: scapItems, onClick: handleScapClick }}>
-            <Button icon={<PlayCircleFilled />}>
+            <Button className="btn" icon={<PlayCircleFilled />}>
               <Space>
                 Run with scap
                 <DownOutlined />
               </Space>
             </Button>
           </Dropdown>
-          <Button onClick={handleShare} icon={<ShareAltOutlined />}>
+          <Button className="btn" onClick={handleShare} icon={<ShareAltOutlined />}>
             Share
           </Button>
           <Upload
@@ -316,7 +317,7 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             beforeUpload={handleScapUpload}
             showUploadList={false}
           >
-            <Button icon={<UploadOutlined />}>Upload scap and run</Button>
+            <Button className="btn" icon={<UploadOutlined />}>Upload scap and run</Button>
           </Upload>
         </Space>
       </CtaDiv>
