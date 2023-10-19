@@ -164,4 +164,24 @@ describe("Page Loading and Functionality Tests", () => {
         expect(editorText).not.to.be.empty;
       });
   });
+
+  // Test: Run with scap example Connect_localhost.scap
+  it("import a Scap file and run", () => {
+
+    // Wait for the button to become visible and then click it
+    cy.contains("Run with scap").click();
+    cy.contains("Connect_localhost.scap").click();
+
+    cy.contains("Loading example").should("be.visible");
+    cy.contains("Compiling with connect_localhost.scap").should("be.visible");
+
+    // Wait for the editor to load and check if it's not empty
+    cy.get(".monaco-editor")
+      .should("be.visible") // Ensure the editor is visible
+      .then(($editor) => {
+        // Get the text content of the editor and assert that it's not empty
+        const editorText = $editor.text();
+        expect(editorText).not.to.be.empty;
+      });
+  });
 });
