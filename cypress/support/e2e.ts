@@ -1,6 +1,6 @@
 import "./commands";
 
-// Avoiding uncaught exceptions from the application to prevent Cypress from finishing
+// To prevent Cypress from terminating before tests run due to an unhandled exception on the application side
 Cypress.on("uncaught:exception", (err, runnable) => {
   return false;
 });
