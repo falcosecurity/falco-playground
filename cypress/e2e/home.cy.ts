@@ -135,4 +135,33 @@ describe("Page Loading and Functionality Tests", () => {
         expect(editorText).not.to.be.empty;
       });
   });
+
+  // Test: Import a scap file and verify that the editor is populated with the scap content
+  it("import a Scap file and run", () => {
+
+    // Wait for the button to become visible and then click it
+    cy.get("button:contains('Upload scap and run')")
+      .should("be.visible")
+      .click();
+
+    // Upload the file
+    cy.get("input[accept='.scap']").as("fileUpload");
+    cy.fixture("example.scap").then((fileContent) => {
+      cy.get("@fileUpload").attachFile({
+        fileContent: fileContent.toString(),
+        fileName: "example.scap"
+      });
+    });
+
+    cy.contains("Compiling with example.scap").should("be.visible");
+
+    // Wait for the editor to load and check if it's not empty
+    cy.get(".monaco-editor")
+      .should("be.visible") // Ensure the editor is visible
+      .then(($editor) => {
+        // Get the text content of the editor and assert that it's not empty
+        const editorText = $editor.text();
+        expect(editorText).not.to.be.empty;
+      });
+  });
 });
