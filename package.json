@@ -20,6 +20,7 @@
     "@types/emscripten": "^1.39.6",
     "antd": "^5.7.0",
     "bootstrap-icons": "^1.11.1",
+    "clipboardy": "^3.0.0",
     "cypress": "^13.3.0",
     "gh-pages": "^5.0.0",
     "json-schema": "^0.4.0",

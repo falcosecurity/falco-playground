@@ -17,11 +17,19 @@ limitations under the License.
 */
 
 import { defineConfig } from "cypress";
+import clipboardy from "clipboardy";
 
 export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:5173",
     setupNodeEvents(on, config) {
+      on("task", {
+        // Clipboard test plugin
+        getClipboard: () => {
+          const clipboard: string = clipboardy.readSync();
+          return clipboard;
+        },
+      });
       // implement node event listeners here
     },
   },
