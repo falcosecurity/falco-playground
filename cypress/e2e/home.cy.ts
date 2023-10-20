@@ -90,6 +90,13 @@ describe("Page Loading and Functionality Tests", () => {
     cy.contains("Copied URL to clipboard").should("exist"); // Replace with your message selector
   });
 
+  // Test: Check if drop down menu shows up when 'Run with scap' is hovered
+  it("check if drop-down menu shows up when 'Run with scap' is hovered", () => {
+    cy.get("button:contains('Run with scap')").trigger("mouseover");
+    cy.wait(1000);
+    cy.get(".ant-dropdown").should("be.visible");
+  });
+  
   // Test: Import a YAML file and verify that the editor is populated with the YAML content
   it("import a YAML file and verify that the editor is populated", () => {
 
