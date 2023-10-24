@@ -32,7 +32,7 @@ export const CtaDiv = styled.div`
 `;
 export const Button = styled.div`
   flex: 1 1 3%;
-  color:var(--color)
+  color: var(--color);
 `;
 export const SpinDiv = styled(Spin)`
   flex: 1 1 50%;
@@ -42,9 +42,9 @@ export const ErrorDiv = styled.div<{ $error?: boolean }>`
   background-color: var(--terminal-color);
   font-family: "Source Code Pro";
   color: ${(props) => (props.$error ? "#f24c3d" : "#9DC08B")};
-padding: 1rem;
-border-radius: 1rem;
-font-size: 0.8rem;
-white-space: pre - line;
-overflow-x: scroll;
+  padding: 1rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  white-space: pre-line;
+  overflow-x: scroll;
 `;
