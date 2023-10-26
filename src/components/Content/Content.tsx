@@ -24,10 +24,10 @@ import type { Error } from "../Sidebar/falco_output";
 import { Section } from "./content.style";
 import Monaco from "../Editor/Monaco";
 import Sidebar from "../Sidebar/Sidebar";
+import { useAppSelector } from "../../utilities/reduxHooks";
 
 const Content = () => {
-  const [code, setCode] = useState<string>("");
-  const [example, setExample] = useState<string>();
+  const code = useAppSelector((state) => state.code.value);
   const debouncedCode = useDebounce(code, 800);
   const [uploadCode, setUploadCode] = useState<string>();
   const [falcoJsonErr, setFalcoJsonErr] = useState<Error[]>();
@@ -50,18 +50,11 @@ const Content = () => {
   return (
     <Section>
       <Monaco
-        data={setCode}
-        example={example}
         falcoJsonErr={falcoJsonErr}
         uploadCode={uploadCode}
         setUploadCode={setUploadCode}
       />
-      <Sidebar
-        code={debouncedCode}
-        example={setExample}
-        errJson={setFalcoJsonErr}
-        uploadCode={setUploadCode}
-      />
+      <Sidebar errJson={setFalcoJsonErr} uploadCode={setUploadCode} />
     </Section>
   );
 };

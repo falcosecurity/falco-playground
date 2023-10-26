@@ -36,10 +36,9 @@ import scap from "/connect_localhost.scap?url";
 import scap2 from "/open-multiple-files.scap?url";
 import scap3 from "/syscall.scap?url";
 import "./sidebar.css";
-
+import { useAppSelector, useAppDispatch } from "../../utilities/reduxHooks";
+import { example } from "../../utilities/slice";
 interface props {
-  code: string;
-  example: React.Dispatch<React.SetStateAction<string>>;
   errJson: React.Dispatch<React.SetStateAction<Error[]>>;
   uploadCode: React.Dispatch<React.SetStateAction<string | ArrayBuffer>>;
 }
@@ -48,18 +47,24 @@ export const encodedYaml = (yaml: string) => {
   return lzstring.compressToBase64(yaml);
 };
 
-export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
+export const Sidebar = ({ errJson, uploadCode }: props) => {
   const [wasm, loading] = useWasm();
   const [falcoOut, setFalcoOut] = useState<string>(null);
   const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
   const [modal, setModal] = useState({ state: false, content: [""] });
   const [messageApi, contextHolder] = message.useMessage();
 
-  const handleMenuClick = (items) => {
+  const code = useAppSelector((state) => state.code.value);
+  const dispatch = useAppDispatch();
+
+  interface item {
+    key: string;
+    label: JSX.Element;
+  }
+
+  const handleMenuClick = (items: item) => {
     message.success("Example" + items.key + " loaded succesfully");
-    example(() => {
-      return items.key;
-    });
+    dispatch(example(items.key));
   };
   const exampleItems: MenuProps["items"] = [
     {
@@ -80,7 +85,6 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     switch (items.key) {
       case "1":
         message.info("Compiling with connect_localhost.scap");
-        console.log(scap);
         compileWithScap(scap, "");
         break;
       case "2":
@@ -218,7 +222,8 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
     const urlConstructor = new URLSearchParams();
     const data = encodedYaml(code);
     urlConstructor.append("code", data);
-    const URL = `${window.location.origin}${window.location.pathname
+    const URL = `${window.location.origin}${
+      window.location.pathname
     }#/?${urlConstructor.toString()}`;
     navigator.clipboard.writeText(URL);
     message.success("Copied URL to clipboard");
@@ -271,7 +276,6 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             icon={<PlayCircleFilled />}
             type="primary"
             size="large"
-
           >
             Run
           </Button>
@@ -280,12 +284,20 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             beforeUpload={handleUpload}
             showUploadList={false}
           >
-            <Button className="btn" icon={<UploadOutlined />}>Import Yaml</Button>
+            <Button className="btn" icon={<UploadOutlined />}>
+              Import Yaml
+            </Button>
           </Upload>
-          <Button className="btn" onClick={handleDownload} block icon={<DownloadOutlined />}>
+          <Button
+            className="btn"
+            onClick={handleDownload}
+            block
+            icon={<DownloadOutlined />}
+          >
             Download
           </Button>
-          <Button className="btn"
+          <Button
+            className="btn"
             onClick={() => {
               messageApi.success("Code copied to clipboard");
               navigator.clipboard.writeText(code);
@@ -295,11 +307,14 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
           >
             Copy
           </Button>
-          <Dropdown className="btn"
+          <Dropdown
+            className="btn"
             menu={{ items: exampleItems, onClick: handleMenuClick }}
             placement="bottom"
           >
-            <Button className="btn" icon={<FileOutlined />}>Load Examples</Button>
+            <Button className="btn" icon={<FileOutlined />}>
+              Load Examples
+            </Button>
           </Dropdown>
           <Dropdown menu={{ items: scapItems, onClick: handleScapClick }}>
             <Button className="btn" icon={<PlayCircleFilled />}>
@@ -309,7 +324,11 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
               </Space>
             </Button>
           </Dropdown>
-          <Button className="btn" onClick={handleShare} icon={<ShareAltOutlined />}>
+          <Button
+            className="btn"
+            onClick={handleShare}
+            icon={<ShareAltOutlined />}
+          >
             Share
           </Button>
           <Upload
@@ -317,7 +336,9 @@ export const Sidebar = ({ code, example, errJson, uploadCode }: props) => {
             beforeUpload={handleScapUpload}
             showUploadList={false}
           >
-            <Button className="btn" icon={<UploadOutlined />}>Upload scap and run</Button>
+            <Button className="btn" icon={<UploadOutlined />}>
+              Upload scap and run
+            </Button>
           </Upload>
         </Space>
       </CtaDiv>
