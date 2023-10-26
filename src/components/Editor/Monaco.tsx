@@ -20,18 +20,20 @@ import React, { useState, useRef, useEffect } from "react";
 import { setDiagnosticsOptions } from "monaco-yaml";
 import { JSONSchema6 } from "json-schema";
 import * as lzstring from "lz-string";
-
-import Editor from "./monaco.style";
-import { example1, example2, example3 } from "./examples";
-import { monaco, Uri } from "./customMocaco";
-import type { CustomError, Error } from "../Sidebar/falco_output";
-import falcoSchema from "./falcoSchema.json";
 import { useSearchParams } from "react-router-dom";
 import { message } from "antd";
 
+import Editor from "./monaco.style";
+import { example1 } from "./examples";
+import { monaco, Uri } from "./customMocaco";
+import type { CustomError, Error } from "../Sidebar/falco_output";
+import falcoSchema from "./falcoSchema.json";
+
+//Redux
+import { useAppDispatch, useAppSelector } from "../../utilities/reduxHooks";
+import { autosave } from "../../utilities/slice";
+
 interface monacoProps {
-  data?: React.Dispatch<React.SetStateAction<string>>;
-  example?: string;
   falcoJsonErr?: Error[];
   uploadCode?: string;
   setUploadCode?: React.Dispatch<React.SetStateAction<string>>;
@@ -43,17 +45,14 @@ export const decodedYaml = (encodedData: string) => {
 
 const messageInterval = 5;
 
-const Monaco = ({
-  data,
-  example,
-  falcoJsonErr,
-  uploadCode,
-  setUploadCode,
-}: monacoProps) => {
+const Monaco = ({ falcoJsonErr, uploadCode, setUploadCode }: monacoProps) => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [searchParams] = useSearchParams();
+
+  const dispatch = useAppDispatch();
+  const code = useAppSelector((state) => state.code);
 
   const baseURL = `${window.location.protocol}//${window.location.host}`;
   const modelUri = Uri.parse(`${baseURL}/falcoSchema.json`);
@@ -103,17 +102,12 @@ const Monaco = ({
           } else if (shared != "true") {
             message.success("Loading from local storage", messageInterval);
           }
-
           model = monaco.editor.createModel(localCode, "yaml", modelUri);
-          data(() => {
-            return localCode;
-          });
+          dispatch(autosave(localCode));
         } else {
           message.success("Loading example", messageInterval);
           model = monaco.editor.createModel(example1, "yaml", modelUri);
-          data(() => {
-            return example1;
-          });
+          dispatch(autosave(example1));
         }
         return monaco.editor.create(monacoEL.current!, {
           model: model,
@@ -127,20 +121,10 @@ const Monaco = ({
     return () => editor?.dispose();
   }, [monacoEL.current]);
 
-  useEffect(() => {
-    if (editor) {
-      switch (example) {
-        case "1":
-          editor.getModel().setValue(example1);
-          break;
-        case "2":
-          editor.getModel().setValue(example2);
-          break;
-        case "3":
-          editor.getModel().setValue(example3);
-      }
-    }
-  }, [example]);
+  // excecute when a example is chosen and yaml file is uploaded
+  if (code.rewriteCode) {
+    editor?.getModel().setValue(code.value);
+  }
 
   useEffect(() => {
     if (uploadCode != "") {
@@ -193,9 +177,7 @@ const Monaco = ({
   }, [falcoJsonErr === undefined ? undefined : Object.values(falcoJsonErr)]);
 
   editor?.getModel().onDidChangeContent(() => {
-    data(() => {
-      return editor.getModel().getValue();
-    });
+    dispatch(autosave(editor.getModel().getValue()));
   });
   return <Editor className="monaco" ref={monacoEL} />;
 };
