@@ -16,45 +16,17 @@ limitations under the License.
 
 */
 
-import { useEffect, useState } from "react";
-import { useDebounce } from "../../Hooks/UseDebounce";
-import useWasm from "../../Hooks/UseWasm";
-import type { Error } from "../Sidebar/falco_output";
+import { useState } from "react";
 
 import { Section } from "./content.style";
 import Monaco from "../Editor/Monaco";
 import Sidebar from "../Sidebar/Sidebar";
-import { useAppSelector } from "../../utilities/reduxHooks";
 
 const Content = () => {
-  const code = useAppSelector((state) => state.code.value);
-  const debouncedCode = useDebounce(code, 800);
-  const [uploadCode, setUploadCode] = useState<string>();
-  const [falcoJsonErr, setFalcoJsonErr] = useState<Error[]>();
-
-  const [wasm] = useWasm();
-
-  useEffect(() => {
-    const autoSave = async () => {
-      try {
-        await wasm?.writeFileAndRun("rule.yaml", code);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    autoSave();
-    if (debouncedCode) {
-      localStorage.setItem("code", debouncedCode);
-    }
-  }, [debouncedCode]);
   return (
     <Section>
-      <Monaco
-        falcoJsonErr={falcoJsonErr}
-        uploadCode={uploadCode}
-        setUploadCode={setUploadCode}
-      />
-      <Sidebar errJson={setFalcoJsonErr} uploadCode={setUploadCode} />
+      <Monaco />
+      <Sidebar />
     </Section>
   );
 };
