@@ -37,32 +37,21 @@ import scap2 from "/open-multiple-files.scap?url";
 import scap3 from "/syscall.scap?url";
 import "./sidebar.css";
 import { useAppSelector, useAppDispatch } from "../../utilities/reduxHooks";
-import { example } from "../../utilities/slice";
-interface props {
-  errJson: React.Dispatch<React.SetStateAction<Error[]>>;
-  uploadCode: React.Dispatch<React.SetStateAction<string | ArrayBuffer>>;
-}
+import { output, example, errorJson, upload } from "../../utilities/slice";
 
 export const encodedYaml = (yaml: string) => {
   return lzstring.compressToBase64(yaml);
 };
 
-export const Sidebar = ({ errJson, uploadCode }: props) => {
+export const Sidebar = () => {
   const [wasm, loading] = useWasm();
-  const [falcoOut, setFalcoOut] = useState<string>(null);
-  const [falcoStd, setFalcoStd] = useState<FalcoStdOut>();
   const [modal, setModal] = useState({ state: false, content: [""] });
   const [messageApi, contextHolder] = message.useMessage();
 
-  const code = useAppSelector((state) => state.code.value);
+  const code = useAppSelector((state) => state.code);
   const dispatch = useAppDispatch();
 
-  interface item {
-    key: string;
-    label: JSX.Element;
-  }
-
-  const handleMenuClick = (items: item) => {
+  const handleMenuClick = (items) => {
     message.success("Example" + items.key + " loaded succesfully");
     dispatch(example(items.key));
   };
@@ -117,9 +106,13 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
 
   const compileCode = async () => {
     if (wasm) {
-      const [jsonOut, stdout] = await wasm.writeFileAndRun("rule.yaml", code);
-      setFalcoStd(JSON.parse(jsonOut));
-      setFalcoOut(stdout);
+      const [jsonOut, stdout] = await wasm.writeFileAndRun(
+        "rule.yaml",
+        code.value
+      );
+      const decodedJson: FalcoStdOut = JSON.parse(jsonOut);
+      dispatch(errorJson(decodedJson));
+      dispatch(output(stdout));
     }
   };
 
@@ -132,17 +125,17 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
       if (buffer) {
         const [jlines, stdout] = await wasm.compileWithScap(
           new Uint8Array(buffer),
-          code
+          code.value
         );
         jsonLines = jlines;
-        setFalcoOut(stdout);
+        dispatch(output(stdout));
       } else {
         const [jlines, stdout] = await wasm.compileWithScap(
           new Uint8Array(dataBuf),
-          code
+          code.value
         );
         jsonLines = jlines;
-        setFalcoOut(stdout);
+        dispatch(output(stdout));
       }
       for (const jsonLine of jsonLines.split("\n")) {
         if (jsonLine.length > 0 && jsonLine.startsWith("{")) {
@@ -161,18 +154,18 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
   };
 
   const conditionallyRenderTerminal = () => {
-    if (!falcoStd) {
+    if (!code.errorJson.falco_load_results?.length) {
       return <SpinDiv size="large" />;
-    } else if (falcoStd.falco_load_results[0].successful) {
+    } else if (code.errorJson.falco_load_results[0].successful) {
       return (
         <ErrorDiv className="terminal-success ">
-          <p>{falcoOut}</p>
+          <p>{code.output}</p>
         </ErrorDiv>
       );
     } else {
       return (
         <ErrorDiv className="terminal-error" $error>
-          <p>{falcoOut}</p>
+          <p>{code.output}</p>
         </ErrorDiv>
       );
     }
@@ -183,9 +176,7 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
     reader.onload = (e) => {
       if (e.target.result) {
         messageApi.success("Successfully loaded yaml file");
-        uploadCode(() => {
-          return e.target.result;
-        });
+        dispatch(upload(e.target.result as string));
       } else {
         messageApi.error("File is empty or invalid");
       }
@@ -210,7 +201,7 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
 
   const handleDownload = () => {
     messageApi.info("Downloading rule.yaml");
-    const file = new Blob([code], { type: "text/plain" });
+    const file = new Blob([code.value], { type: "text/plain" });
     const element = document.createElement("a");
     element.href = URL.createObjectURL(file);
     element.download = "rule.yaml";
@@ -220,7 +211,7 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
 
   const handleShare = () => {
     const urlConstructor = new URLSearchParams();
-    const data = encodedYaml(code);
+    const data = encodedYaml(code.value);
     urlConstructor.append("code", data);
     const URL = `${window.location.origin}${
       window.location.pathname
@@ -229,20 +220,8 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
     message.success("Copied URL to clipboard");
   };
   useEffect(() => {
-    if (code) {
-      compileCode();
-    }
-  }, [code, loading]);
-
-  useEffect(() => {
-    errJson(() => {
-      return falcoStd?.falco_load_results[0].errors;
-    });
-  }, [
-    falcoStd === undefined
-      ? undefined
-      : Object.values(falcoStd?.falco_load_results[0].errors),
-  ]);
+    compileCode();
+  }, [code.value, loading]);
 
   return (
     <SideDiv>
@@ -300,7 +279,7 @@ export const Sidebar = ({ errJson, uploadCode }: props) => {
             className="btn"
             onClick={() => {
               messageApi.success("Code copied to clipboard");
-              navigator.clipboard.writeText(code);
+              navigator.clipboard.writeText(code.value);
             }}
             block
             icon={<CopyOutlined />}

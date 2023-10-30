@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { setDiagnosticsOptions } from "monaco-yaml";
 import { JSONSchema6 } from "json-schema";
 import * as lzstring from "lz-string";
@@ -24,20 +24,14 @@ import { useSearchParams } from "react-router-dom";
 import { message } from "antd";
 
 import Editor from "./monaco.style";
-import { example1 } from "./examples";
+import { example1 } from "../../data/examples";
 import { monaco, Uri } from "./customMocaco";
-import type { CustomError, Error } from "../Sidebar/falco_output";
+import type { CustomError } from "../Sidebar/falco_output";
 import falcoSchema from "./falcoSchema.json";
 
 //Redux
 import { useAppDispatch, useAppSelector } from "../../utilities/reduxHooks";
 import { autosave } from "../../utilities/slice";
-
-interface monacoProps {
-  falcoJsonErr?: Error[];
-  uploadCode?: string;
-  setUploadCode?: React.Dispatch<React.SetStateAction<string>>;
-}
 
 export const decodedYaml = (encodedData: string) => {
   return lzstring.decompressFromBase64(encodedData);
@@ -45,7 +39,7 @@ export const decodedYaml = (encodedData: string) => {
 
 const messageInterval = 5;
 
-const Monaco = ({ falcoJsonErr, uploadCode, setUploadCode }: monacoProps) => {
+const Monaco = () => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
@@ -126,41 +120,34 @@ const Monaco = ({ falcoJsonErr, uploadCode, setUploadCode }: monacoProps) => {
     editor?.getModel().setValue(code.value);
   }
 
-  useEffect(() => {
-    if (uploadCode != "") {
-      editor?.getModel().setValue(uploadCode);
-    }
-    setUploadCode(() => {
-      return "";
-    });
-  }, [uploadCode]);
-
   const handleSquigglyLines = (): CustomError[] => {
     const errArr: CustomError[] = [];
-    falcoJsonErr?.forEach((err) => {
-      err.context.locations.forEach((location, idx) => {
-        if (idx != err.context.locations.length - 1) {
-          errArr.push({
-            code: err.code,
-            message: "Error at " + location.item_type,
-            position: location.position,
-          });
-        } else {
-          errArr.push({
-            code: err.code,
-            message: err.message,
-            position: location.position,
-          });
-        }
+    const falcoJsonErr = code.errorJson.falco_load_results;
+    if (falcoJsonErr?.length) {
+      falcoJsonErr[0].errors.forEach((err) => {
+        err.context.locations.forEach((location, idx) => {
+          if (idx != err.context.locations.length - 1) {
+            errArr.push({
+              code: err.code,
+              message: "Error at " + location.item_type,
+              position: location.position,
+            });
+          } else {
+            errArr.push({
+              code: err.code,
+              message: err.message,
+              position: location.position,
+            });
+          }
+        });
       });
-    });
+    }
     return errArr;
   };
 
-  useEffect(() => {
+  const squiggly = () => {
     const squigglyErr = handleSquigglyLines();
     const Markerdata: monaco.editor.IMarkerData[] = [];
-
     squigglyErr?.map((err) => {
       const postition = editor.getModel().getPositionAt(err.position.offset);
       Markerdata.push({
@@ -174,8 +161,8 @@ const Monaco = ({ falcoJsonErr, uploadCode, setUploadCode }: monacoProps) => {
       });
     });
     monaco?.editor.setModelMarkers(editor?.getModel(), "owner", Markerdata);
-  }, [falcoJsonErr === undefined ? undefined : Object.values(falcoJsonErr)]);
-
+  };
+  squiggly();
   editor?.getModel().onDidChangeContent(() => {
     dispatch(autosave(editor.getModel().getValue()));
   });
