@@ -54,6 +54,9 @@ const Monaco = () => {
 
   const originalURL = window.location.origin + window.location.pathname;
 
+  //debounce code
+  let debounce: NodeJS.Timeout;
+
   useEffect(() => {
     if (monacoEL) {
       setEditor((editor) => {
@@ -164,7 +167,10 @@ const Monaco = () => {
   };
   squiggly();
   editor?.getModel().onDidChangeContent(() => {
-    dispatch(autosave(editor.getModel().getValue()));
+    if (debounce) clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      dispatch(autosave(editor.getModel().getValue()));
+    }, 500);
   });
   return <Editor className="monaco" ref={monacoEL} />;
 };
