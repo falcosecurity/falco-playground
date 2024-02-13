@@ -13,7 +13,8 @@
     "cy:run": "cypress run",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "fix": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --fix",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "get-assets": "node scripts/get-assets.js"
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
@@ -31,7 +32,9 @@
     "react-resize-detector": "^9.1.0",
     "react-router-dom": "^6.15.0",
     "styled-components": "^6.0.3",
-    "ws": "^8.14.2"
+    "tar": "^6.2.0",
+    "ws": "^8.14.2",
+    "xml2json": "^0.12.0"
   },
   "resolutions": {
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"

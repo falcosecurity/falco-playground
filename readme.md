@@ -22,22 +22,15 @@ This application is built using [React](https://react.dev/) as its front-end fra
 npm install
 ```
 
-### Steps to download additional artifacts
+### Acquiring additional required artifacts
 
-Since `falco-playground` uses WebAssembly, it relies on a `.wasm` file linked to a `.js` file. You can find the `falco.js` and `falco.wasm` in the lastest **completed** `ci` build of falco.
+Since `falco-playground` uses WebAssembly, it relies on a `.wasm` file (placed statically at `public/falco.wasm`) linked to a `.js` file (placed at `src/Hooks/falco.js`)
 
-1. Go to https://github.com/falcosecurity/falco/actions/workflows/ci.yml
-2. Select a **sucessful** workflow.
-3. Download the `falco-*-wasm.tar.gz` in the **Artifact** section below.
+Run the following command to get and place the latest artifacts in their respective paths.
 
-### Move `falco.wasm` and `falco.js` files into desired location
-
-Since WebAssembly files (`.wasm`) can't be transpiled by the bundler, we need to ensure they remain static. To achieve this, we should relocate the `falco.wasm` file to the `public` directory. Additionally, for the application to interact with falco.wasm effectively, we should move `falco.js` to the `hooks` directory.
-
-After extracting `falco-*-wasm.tar.gz`, `falco.js` and `falco.wasm` can be found at `falco-*-wasm/usr/bin`.
-
-1. Move `falco.wasm` into `public`
-2. Move `falco.js` into `src/Hooks`
+```
+npm run get-assets
+```
 
 ### Start development server
 
