@@ -63,8 +63,6 @@ function extract_latest_wasm_zip_url(xmlstr) {
     return;
   }
 
-  // console.debug(xmlstr);
-
   var prefix = _raw["ListBucketResult"]["Prefix"];
 
   var contents = _raw["ListBucketResult"]["Contents"];
