@@ -32,6 +32,18 @@ Run the following command to get and place the latest artifacts in their respect
 npm run get-assets
 ```
 
+#### Alternatively
+You can manually download assets and place them appropriately in the source folder
+
+1. Go to [Falco Downloads](https://d20hasrqv82i0q.cloudfront.net/?prefix=packages/wasm-dev/)
+
+2. Download the _latest_ `.tar.gz` file
+
+3. Unzip the components and move the files within into falco-playground's source folder:
+    - tgz's `usr/bin/falco.wasm` goes to falco-playground's `public/falco.wasm`
+    - tgz's `usr/bin/falco.js` goes to falco-playground's `src/Hooks/falco.js`
+
+
 ### Start development server
 
 ```
