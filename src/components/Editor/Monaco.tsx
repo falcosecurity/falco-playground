@@ -16,26 +16,22 @@ limitations under the License.
 
 */
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { setDiagnosticsOptions } from "monaco-yaml";
 import { JSONSchema6 } from "json-schema";
 import * as lzstring from "lz-string";
-
-import Editor from "./monaco.style";
-import { example1, example2, example3 } from "./examples";
-import { monaco, Uri } from "./customMocaco";
-import type { CustomError, Error } from "../Sidebar/falco_output";
-import falcoSchema from "./falcoSchema.json";
 import { useSearchParams } from "react-router-dom";
 import { message } from "antd";
 
-interface monacoProps {
-  data?: React.Dispatch<React.SetStateAction<string>>;
-  example?: string;
-  falcoJsonErr?: Error[];
-  uploadCode?: string;
-  setUploadCode?: React.Dispatch<React.SetStateAction<string>>;
-}
+import Editor from "./monaco.style";
+import { example1 } from "../../data/examples";
+import { monaco, Uri } from "./customMocaco";
+import type { CustomError } from "../Sidebar/falco_output";
+import falcoSchema from "./falcoSchema.json";
+
+//Redux
+import { useAppDispatch, useAppSelector } from "../../utilities/reduxHooks";
+import { autosave } from "../../utilities/slice";
 
 export const decodedYaml = (encodedData: string) => {
   return lzstring.decompressFromBase64(encodedData);
@@ -43,23 +39,23 @@ export const decodedYaml = (encodedData: string) => {
 
 const messageInterval = 5;
 
-const Monaco = ({
-  data,
-  example,
-  falcoJsonErr,
-  uploadCode,
-  setUploadCode,
-}: monacoProps) => {
+const Monaco = () => {
   const monacoEL = useRef(null);
   const [editor, setEditor] =
     useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [searchParams] = useSearchParams();
+
+  const dispatch = useAppDispatch();
+  const code = useAppSelector((state) => state.code);
 
   const baseURL = `${window.location.protocol}//${window.location.host}`;
   const modelUri = Uri.parse(`${baseURL}/falcoSchema.json`);
   let model: monaco.editor.ITextModel;
 
   const originalURL = window.location.origin + window.location.pathname;
+
+  //debounce code
+  let debounce: NodeJS.Timeout;
 
   useEffect(() => {
     if (monacoEL) {
@@ -103,17 +99,12 @@ const Monaco = ({
           } else if (shared != "true") {
             message.success("Loading from local storage", messageInterval);
           }
-
           model = monaco.editor.createModel(localCode, "yaml", modelUri);
-          data(() => {
-            return localCode;
-          });
+          dispatch(autosave(localCode));
         } else {
           message.success("Loading example", messageInterval);
           model = monaco.editor.createModel(example1, "yaml", modelUri);
-          data(() => {
-            return example1;
-          });
+          dispatch(autosave(example1));
         }
         return monaco.editor.create(monacoEL.current!, {
           model: model,
@@ -127,56 +118,39 @@ const Monaco = ({
     return () => editor?.dispose();
   }, [monacoEL.current]);
 
-  useEffect(() => {
-    if (editor) {
-      switch (example) {
-        case "1":
-          editor.getModel().setValue(example1);
-          break;
-        case "2":
-          editor.getModel().setValue(example2);
-          break;
-        case "3":
-          editor.getModel().setValue(example3);
-      }
-    }
-  }, [example]);
-
-  useEffect(() => {
-    if (uploadCode != "") {
-      editor?.getModel().setValue(uploadCode);
-    }
-    setUploadCode(() => {
-      return "";
-    });
-  }, [uploadCode]);
+  // excecute when a example is chosen and yaml file is uploaded
+  if (code.rewriteCode) {
+    editor?.getModel().setValue(code.value);
+  }
 
   const handleSquigglyLines = (): CustomError[] => {
     const errArr: CustomError[] = [];
-    falcoJsonErr?.forEach((err) => {
-      err.context.locations.forEach((location, idx) => {
-        if (idx != err.context.locations.length - 1) {
-          errArr.push({
-            code: err.code,
-            message: "Error at " + location.item_type,
-            position: location.position,
-          });
-        } else {
-          errArr.push({
-            code: err.code,
-            message: err.message,
-            position: location.position,
-          });
-        }
+    const falcoJsonErr = code.errorJson.falco_load_results;
+    if (falcoJsonErr?.length) {
+      falcoJsonErr[0].errors.forEach((err) => {
+        err.context.locations.forEach((location, idx) => {
+          if (idx != err.context.locations.length - 1) {
+            errArr.push({
+              code: err.code,
+              message: "Error at " + location.item_type,
+              position: location.position,
+            });
+          } else {
+            errArr.push({
+              code: err.code,
+              message: err.message,
+              position: location.position,
+            });
+          }
+        });
       });
-    });
+    }
     return errArr;
   };
 
-  useEffect(() => {
+  const squiggly = () => {
     const squigglyErr = handleSquigglyLines();
     const Markerdata: monaco.editor.IMarkerData[] = [];
-
     squigglyErr?.map((err) => {
       const postition = editor.getModel().getPositionAt(err.position.offset);
       Markerdata.push({
@@ -190,12 +164,13 @@ const Monaco = ({
       });
     });
     monaco?.editor.setModelMarkers(editor?.getModel(), "owner", Markerdata);
-  }, [falcoJsonErr === undefined ? undefined : Object.values(falcoJsonErr)]);
-
+  };
+  squiggly();
   editor?.getModel().onDidChangeContent(() => {
-    data(() => {
-      return editor.getModel().getValue();
-    });
+    if (debounce) clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      dispatch(autosave(editor.getModel().getValue()));
+    }, 500);
   });
   return <Editor className="monaco" ref={monacoEL} />;
 };

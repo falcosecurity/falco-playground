@@ -30,14 +30,16 @@ export const SideDiv = styled.div`
 export const CtaDiv = styled.div`
   flex: 1 1 3%;
 `;
-
+export const Button = styled.div`
+  flex: 1 1 3%;
+  color: var(--color);
+`;
 export const SpinDiv = styled(Spin)`
   flex: 1 1 50%;
 `;
-
 export const ErrorDiv = styled.div<{ $error?: boolean }>`
   flex: 1 1 60%;
-  background-color: black;
+  background-color: var(--terminal-color);
   font-family: "Source Code Pro";
   color: ${(props) => (props.$error ? "#f24c3d" : "#9DC08B")};
   padding: 1rem;

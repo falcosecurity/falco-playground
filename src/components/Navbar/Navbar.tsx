@@ -17,18 +17,22 @@ limitations under the License.
 */
 
 import falcoLogo from "../../assets/logo.svg";
-import "./navbar.css";
 import GitHubButton from "react-github-btn";
+import DarkMode from "../DarkMode/DarkMode";
+import "./navbar.css";
 
 const Navbar = () => {
+
   return (
-    <section className="top-nav">
+    <section className="top-nav" >
       <img src={falcoLogo} width="120px"></img>
       <input id="menu-toggle" type="checkbox" />
       <label className="menu-button-container" htmlFor="menu-toggle">
         <div className="menu-button"></div>
       </label>
+
       <ul className="menu">
+
         <li>
           <a href="https://falco.org/docs/">Docs</a>
         </li>
@@ -42,6 +46,9 @@ const Navbar = () => {
           <a href="https://falco.org/about/">About</a>
         </li>
         <li>
+          <DarkMode />
+        </li>
+        <li>
           <GitHubButton
             href="https://github.com/falcosecurity/falco-playground"
             data-size="large"
@@ -51,6 +58,7 @@ const Navbar = () => {
             Star
           </GitHubButton>
         </li>
+
       </ul>
     </section>
   );
