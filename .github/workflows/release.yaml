@@ -1,0 +1,91 @@
+name: Release
+on:
+  release:
+    types: [published]
+
+jobs:
+  release-settings:
+    runs-on: ubuntu-latest
+    outputs:
+      is_latest: ${{ steps.get_settings.outputs.is_latest }} 
+    steps:
+      - name: Get latest release
+        uses: rez0n/actions-github-release@27a57820ee808f8fd940c8a9d1f7188f854aa2b5 # v2.0
+        id: latest_release
+        env:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          type: "stable"
+
+      - name: Check if the current release is the latest
+        id: get_settings
+        shell: python
+        run: |
+          import os
+          import sys
+
+          release_id = '${{ github.event.release.id }}'
+          is_latest = '${{ steps.latest_release.outputs.release_id }}' == release_id
+
+          print(f"is_latest = {is_latest}")
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as ofp:
+              print(f'is_latest={is_latest}'.lower(), file=ofp)
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [release-settings]
+    env:
+      AWS_S3_REGION: eu-west-1
+      AWS_S3_BUCKET: falco-playground
+      AWS_DISTRIBUTION_ID: E3CTNHYRFR6C3 
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      
+      - name: Setup Node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 18
+
+      - name: Download the latest Falco WASM version
+        run: |
+          curl --remote-name-all -L $(cat ./falco_stable_url.txt)
+
+      - name: Extract artifact
+        run: |
+          tar -xvf falco-*-wasm.tar.gz
+          mv falco-*-wasm/usr/bin/falco.wasm ./public
+          mv falco-*-wasm/usr/bin/falco.js ./src/Hooks/
+
+      - name: Remove Unwanted Artifacts
+        run: rm -rf falco-*-wasm.tar.gz falco-*-wasm
+
+      - name: Test
+        uses: cypress-io/github-action@v5
+        with:
+          wait-on: http://localhost:5173
+          start: npx vite --host
+
+      - name: Install and build
+        run: npm install && npm run build
+
+      - name: Upload release artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tar --directory ./dist -cvf falco-playground-${{ github.event.release.tag_name }}.tar.gz .
+          gh release upload ${{ github.event.release.tag_name }} falco-playground-${{ github.event.release.tag_name }}.tar.gz
+
+      - name: Configure AWS credentials
+        if: ${{ needs.release-settings.outputs.is_latest == 'true' }}
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: "arn:aws:iam::292999226676:role/github_actions-falco-playground-s3"
+          aws-region: ${{ env.AWS_S3_REGION }}
+
+      - name: Upload files to S3
+        if: ${{ needs.release-settings.outputs.is_latest == 'true' }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id $${{ env.AWS_DISTRIBUTION_ID }} --paths "/*"
+          aws s3 sync ./dist s3://${{ env.AWS_S3_BUCKET }}/ --delete

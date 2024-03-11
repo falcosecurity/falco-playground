@@ -1,0 +1,1 @@
+https://download.falco.org/packages/wasm-dev/falco-0.37.1-wasm.tar.gz
