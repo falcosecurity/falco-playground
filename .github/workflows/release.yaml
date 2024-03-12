@@ -90,5 +90,5 @@ jobs:
       - name: Upload files to S3
         if: ${{ needs.release-settings.outputs.is_latest == 'true' }}
         run: |
-          aws cloudfront create-invalidation --distribution-id $${{ env.AWS_DISTRIBUTION_ID }} --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ env.AWS_DISTRIBUTION_ID }} --paths "/*"
           aws s3 sync ./dist s3://${{ env.AWS_S3_BUCKET }}/ --delete
