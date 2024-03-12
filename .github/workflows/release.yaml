@@ -35,6 +35,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [release-settings]
+    permissions:
+      id-token: write
+      contents: read
     env:
       AWS_S3_REGION: eu-west-1
       AWS_S3_BUCKET: falco-playground
