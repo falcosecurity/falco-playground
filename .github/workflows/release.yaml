@@ -37,7 +37,7 @@ jobs:
     needs: [release-settings]
     permissions:
       id-token: write
-      contents: read
+      contents: write
     env:
       AWS_S3_REGION: eu-west-1
       AWS_S3_BUCKET: falco-playground
