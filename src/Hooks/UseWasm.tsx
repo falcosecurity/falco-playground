@@ -33,8 +33,10 @@ function useWasm() {
   const falcoScapOptions = [
     "-r",
     "rule.yaml",
-    "-e",
-    "capture_file.scap",
+    "-o",
+    "engine.kind=replay",
+    "-o",
+    "engine.replay.capture_file=capture_file.scap",
     "-o",
     "json_output=true",
     "-o",
