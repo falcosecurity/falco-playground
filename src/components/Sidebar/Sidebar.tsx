@@ -52,7 +52,7 @@ export const Sidebar = () => {
   const dispatch = useAppDispatch();
 
   const handleMenuClick = (items) => {
-    message.success("Example" + items.key + " loaded succesfully");
+    message.success("Example" + items.key + " loaded successfully");
     dispatch(example(items.key));
   };
   const exampleItems: MenuProps["items"] = [
