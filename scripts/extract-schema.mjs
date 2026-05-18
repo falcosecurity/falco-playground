@@ -14,13 +14,11 @@
  *   node scripts/extract-schema.mjs
  */
 
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, resolve } from 'path';
 import { writeFileSync, existsSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const require   = createRequire(import.meta.url);
 
 const FALCO_JS   = resolve(__dirname, '../src/Hooks/falco.js');
 const FALCO_WASM = resolve(__dirname, '../public/falco.wasm');
@@ -42,13 +40,31 @@ function checkPrerequisites() {
   }
 }
 
-async function runRuleSchema() {
-  let stdout  = '';
-  let exitCode = 0;
+async function loadCreateModule() {
+  // Use dynamic import() so both ESM and CJS Emscripten outputs are handled.
+  // Emscripten may export the factory as default or as module.exports directly.
+  const falcoUrl = pathToFileURL(FALCO_JS).href;
+  const mod = await import(falcoUrl);
 
-  // falco.js is an Emscripten-generated CommonJS module; load it with
-  // require() so it is not subject to the package.json "type": "module" rule.
-  const createModule = require(FALCO_JS);
+  // ESM default export  →  mod.default
+  // CJS re-exported via import()  →  mod.default (interop shim)
+  // Already the function itself  →  mod directly
+  const factory = mod.default ?? mod;
+
+  if (typeof factory !== 'function') {
+    throw new Error(
+      `falco.js did not export a factory function.\n` +
+      `Got: ${typeof factory} — keys: ${Object.keys(mod).join(', ')}\n` +
+      'The Emscripten build may use an unexpected export format.'
+    );
+  }
+
+  return factory;
+}
+
+async function runRuleSchema(createModule) {
+  let stdout   = '';
+  let exitCode = 0;
 
   await new Promise((resolve, reject) => {
     const timer = setTimeout(
@@ -73,7 +89,7 @@ async function runRuleSchema() {
         return filename;
       },
 
-      // Intercept the exit call so Emscripten does not terminate this process.
+      // Intercept exit so Emscripten does not terminate this process.
       quit(code) {
         exitCode = code;
         clearTimeout(timer);
@@ -105,8 +121,11 @@ async function runRuleSchema() {
 async function main() {
   checkPrerequisites();
 
+  console.log('Loading falco.js module …');
+  const createModule = await loadCreateModule();
+
   console.log('Running falco --rule-schema …');
-  const { stdout, exitCode } = await runRuleSchema();
+  const { stdout, exitCode } = await runRuleSchema(createModule);
 
   if (!stdout) {
     throw new Error(
