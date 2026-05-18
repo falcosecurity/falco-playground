@@ -64,6 +64,9 @@ jobs:
       - name: Remove Unwanted Artifacts
         run: rm -rf falco-*-wasm.tar.gz falco-*-wasm
 
+      - name: Extract rule schema from wasm
+        run: node scripts/extract-schema.mjs
+
       - name: Test
         uses: cypress-io/github-action@v5
         with:
