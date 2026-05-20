@@ -14,11 +14,13 @@
  *   node scripts/extract-schema.mjs
  */
 
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 import { dirname, resolve } from 'path';
 import { writeFileSync, existsSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const require   = createRequire(import.meta.url);
 
 const FALCO_JS   = resolve(__dirname, '../src/Hooks/falco.js');
 const FALCO_WASM = resolve(__dirname, '../public/falco.wasm');
@@ -40,21 +42,18 @@ function checkPrerequisites() {
   }
 }
 
-async function loadCreateModule() {
-  // Use dynamic import() so both ESM and CJS Emscripten outputs are handled.
-  // Emscripten may export the factory as default or as module.exports directly.
-  const falcoUrl = pathToFileURL(FALCO_JS).href;
-  const mod = await import(falcoUrl);
-
-  // ESM default export  →  mod.default
-  // CJS re-exported via import()  →  mod.default (interop shim)
-  // Already the function itself  →  mod directly
-  const factory = mod.default ?? mod;
+function loadCreateModule() {
+  // Use require() so falco.js is always loaded as CommonJS regardless of the
+  // project's "type":"module" setting. This preserves __dirname, require, and
+  // other CJS globals that the Emscripten glue depends on. Dynamic import()
+  // would honour "type":"module" and strip those globals, causing the
+  // "__dirname is not defined" error seen in CI.
+  const factory = require(FALCO_JS);
 
   if (typeof factory !== 'function') {
     throw new Error(
       `falco.js did not export a factory function.\n` +
-      `Got: ${typeof factory} — keys: ${Object.keys(mod).join(', ')}\n` +
+      `Got: ${typeof factory}\n` +
       'The Emscripten build may use an unexpected export format.'
     );
   }
@@ -122,7 +121,7 @@ async function main() {
   checkPrerequisites();
 
   console.log('Loading falco.js module …');
-  const createModule = await loadCreateModule();
+  const createModule = loadCreateModule();
 
   console.log('Running falco --rule-schema …');
   const { stdout, exitCode } = await runRuleSchema(createModule);
