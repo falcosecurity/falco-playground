@@ -17,7 +17,7 @@
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { dirname, resolve } from 'path';
-import { writeFileSync, existsSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require   = createRequire(import.meta.url);
@@ -43,12 +43,12 @@ function checkPrerequisites() {
 }
 
 function loadCreateModule() {
-  // Use require() so falco.js is always loaded as CommonJS regardless of the
-  // project's "type":"module" setting. This preserves __dirname, require, and
-  // other CJS globals that the Emscripten glue depends on. Dynamic import()
-  // would honour "type":"module" and strip those globals, causing the
-  // "__dirname is not defined" error seen in CI.
-  const factory = require(FALCO_JS);
+  // `createRequire` does NOT force CJS loading: Node's loader still routes
+  // `.js` files in this "type": "module" package through the ESM loader, so
+  // `require(FALCO_JS)` returns the module namespace `{ __esModule: true,
+  // default: factory }`, not the factory itself.
+  const mod = require(FALCO_JS);
+  const factory = mod.default ?? mod;
 
   if (typeof factory !== 'function') {
     throw new Error(
@@ -58,12 +58,20 @@ function loadCreateModule() {
     );
   }
 
+  // The factory body runs in ESM scope (since the file is loaded as ESM
+  // regardless of the caller), so its Node branch reads `__dirname` and
+  // `require()` as free identifiers that do not resolve. Polyfill them on
+  // globalThis before invoking the factory.
+  globalThis.__dirname = dirname(FALCO_JS);
+  globalThis.require   = require;
+
   return factory;
 }
 
 async function runRuleSchema(createModule) {
-  let stdout   = '';
-  let exitCode = 0;
+  let stdout    = '';
+  let exitCode  = 0;
+  let moduleRef = null;
 
   await new Promise((resolve, reject) => {
     const timer = setTimeout(
@@ -74,6 +82,11 @@ async function runRuleSchema(createModule) {
     createModule({
       arguments: ['--rule-schema'],
 
+      // Pass the wasm bytes directly. In Node 18+ `fetch()` is global, so
+      // Emscripten's `instantiateAsync` would call `fetch(wasmBinaryFile)` even
+      // in Node and fail because a filesystem path is not a valid URL.
+      wasmBinary: readFileSync(FALCO_WASM),
+
       // falco writes the JSON schema to stdout.
       print(line) {
         stdout += line + '\n';
@@ -82,24 +95,20 @@ async function runRuleSchema(createModule) {
       // Suppress stderr; Falco emits informational start-up messages there.
       printErr() {},
 
-      // Point the Emscripten loader to the wasm file's actual location.
-      locateFile(filename) {
-        if (filename.endsWith('.wasm')) return FALCO_WASM;
-        return filename;
-      },
-
       // Intercept exit so Emscripten does not terminate this process.
       quit(code) {
         exitCode = code;
         clearTimeout(timer);
-        resolve();
       },
 
       onExit(code) {
         exitCode = code;
         clearTimeout(timer);
-        resolve();
       },
+    }).then((m) => {
+      moduleRef = m;
+      clearTimeout(timer);
+      resolve();
     }).catch((err) => {
       clearTimeout(timer);
       // Emscripten throws { name: 'ExitStatus', status: N } on process.exit().
@@ -111,6 +120,17 @@ async function runRuleSchema(createModule) {
       }
     });
   });
+
+  // falco's --rule-schema uses `printf("%s", ...)` with no trailing newline,
+  // so Emscripten's TTY layer buffers the final `}` and drops it at exit.
+  // Pull it out of the stdout stream before we hand the output to JSON.parse.
+  // Ref: https://github.com/falcosecurity/falco/blob/master/userspace/falco/app/actions/print_rule_schema.cpp#L27
+  if (moduleRef) {
+    const stream = moduleRef.FS?.streams?.[1];
+    if (stream?.tty?.output?.length > 0) {
+      stdout += String.fromCharCode(...stream.tty.output);
+    }
+  }
 
   return { stdout: stdout.trim(), exitCode };
 }
