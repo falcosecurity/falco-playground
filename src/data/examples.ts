@@ -29,7 +29,7 @@ export const example1 = `- macro: open_read
     (not proc.name in (shell_binaries))
   enabled: false
   output: >
-    a shell configuration file was read by a non-shell program (user=%user.name user_loginuid=%user.loginuid command=%proc.cmdline pid=%proc.pid file=%fd.name container_id=%container.id image=%container.image.repository)
+    a shell configuration file was read by a non-shell program (user=%user.name user_loginuid=%user.loginuid command=%proc.cmdline pid=%proc.pid file=%fd.name)
   priority:
     WARNING
   tags: [host, container, filesystem, mitre_discovery, T1546.004]
@@ -60,7 +60,7 @@ export const example2 = `- macro: open_read
   output: >
     Read monitored file via directory traversal (username=%user.name useruid=%user.uid user_loginuid=%user.loginuid program=%proc.name exe=%proc.exepath
     command=%proc.cmdline pid=%proc.pid parent=%proc.pname file=%fd.name fileraw=%fd.nameraw parent=%proc.pname
-    gparent=%proc.aname[2] container_id=%container.id image=%container.image.repository returncode=%evt.res cwd=%proc.cwd)
+    gparent=%proc.aname[2] returncode=%evt.res cwd=%proc.cwd)
   priority: WARNING
   tags: [host, container, filesystem, mitre_discovery, mitre_exfiltration, mitre_credential_access, T1555, T1212, T1020, T1552, T1083]
 `;
@@ -90,7 +90,7 @@ export const example3 = `- macro: user_ssh_directory
   enabled: false
   output: >
     ssh-related file/directory read by non-ssh program (user=%user.name user_loginuid=%user.loginuid
-    command=%proc.cmdline pid=%proc.pid file=%fd.name parent=%proc.pname pcmdline=%proc.pcmdline container_id=%container.id image=%container.image.repository)
+    command=%proc.cmdline pid=%proc.pid file=%fd.name parent=%proc.pname pcmdline=%proc.pcmdline)
   priority: ERROR
   tags: [host, container, filesystem, mitre_discovery, T1005]
 `;
