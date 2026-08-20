@@ -14,7 +14,7 @@
  *   node scripts/extract-schema.mjs
  */
 
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { createRequire } from 'module';
 import { dirname, resolve } from 'path';
 import { writeFileSync, readFileSync, existsSync } from 'fs';
@@ -42,12 +42,20 @@ function checkPrerequisites() {
   }
 }
 
-function loadCreateModule() {
-  // `createRequire` does NOT force CJS loading: Node's loader still routes
-  // `.js` files in this "type": "module" package through the ESM loader, so
-  // `require(FALCO_JS)` returns the module namespace `{ __esModule: true,
-  // default: factory }`, not the factory itself.
-  const mod = require(FALCO_JS);
+async function loadCreateModule() {
+  // falco.js is real ESM (`import.meta.url` at the top, `export default` at the
+  // bottom) and this package is "type": "module", so it always lands in the ESM
+  // loader no matter how it is referenced. `require()` on it therefore relies on
+  // require(esm), which only exists in Node >= 20.19 / >= 22.12: on Node 18 it
+  // throws ERR_REQUIRE_ESM. `import()` loads it on every supported Node.
+  //
+  // The factory body reads `__dirname` and `require()` as free identifiers in
+  // its Node branch, and those do not resolve in ESM scope. Polyfill them on
+  // globalThis before the module is evaluated.
+  globalThis.__dirname = dirname(FALCO_JS);
+  globalThis.require   = require;
+
+  const mod = await import(pathToFileURL(FALCO_JS).href);
   const factory = mod.default ?? mod;
 
   if (typeof factory !== 'function') {
@@ -57,13 +65,6 @@ function loadCreateModule() {
       'The Emscripten build may use an unexpected export format.'
     );
   }
-
-  // The factory body runs in ESM scope (since the file is loaded as ESM
-  // regardless of the caller), so its Node branch reads `__dirname` and
-  // `require()` as free identifiers that do not resolve. Polyfill them on
-  // globalThis before invoking the factory.
-  globalThis.__dirname = dirname(FALCO_JS);
-  globalThis.require   = require;
 
   return factory;
 }
@@ -141,7 +142,7 @@ async function main() {
   checkPrerequisites();
 
   console.log('Loading falco.js module …');
-  const createModule = loadCreateModule();
+  const createModule = await loadCreateModule();
 
   console.log('Running falco --rule-schema …');
   const { stdout, exitCode } = await runRuleSchema(createModule);
