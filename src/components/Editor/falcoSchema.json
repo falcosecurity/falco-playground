@@ -1,90 +1,50 @@
 {
   "$schema": "http://json-schema.org/draft-06/schema#",
-  "type": "array",
-  "items": {
-    "anyOf": [
-      {
-        "$ref": "#definitions/RequiredEngineVersionRef"
-      },
-      {
-        "$ref": "#definitions/ListRef"
-      },
-      {
-        "$ref": "#definitions/MacroRef"
-      },
-      {
-        "$ref": "#definitions/RuleRef"
-      },
-      {
-        "$ref": "#definitions/AppendOnlyRuleRef"
-      },
-      {
-        "$ref": "#definitions/EnableOnlyRuleRef"
-      }
-    ]
-  },
   "definitions": {
-    "RequiredEngineVersionRef": {
-      "type": "object",
+    "Alternative": {
       "additionalProperties": false,
       "properties": {
-        "required_engine_version": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "Alternative",
+      "type": "object"
+    },
+    "Exception": {
+      "additionalProperties": false,
+      "properties": {
+        "comps": {},
+        "fields": {},
+        "name": {
+          "type": "string"
+        },
+        "values": {}
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Exception",
+      "type": "object"
+    },
+    "FalcoRule": {
+      "additionalProperties": false,
+      "properties": {
+        "append": {
+          "type": "boolean"
+        },
+        "capture": {
+          "type": "boolean"
+        },
+        "capture_duration": {
           "type": "integer"
-        }
-      },
-      "required": ["required_engine_version"],
-      "title": "RequiredEngineVersion"
-    },
-    "ListRef": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "list": {
-          "type": "string"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          }
-        },
-        "append": {
-          "type": "boolean"
-        }
-      },
-      "required": ["list", "items"],
-      "title": "List"
-    },
-    "MacroRef": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "macro": {
-          "type": "string"
-        },
-        "condition": {
-          "type": "string"
-        },
-        "append": {
-          "type": "boolean"
-        }
-      },
-      "required": ["macro", "condition"],
-      "title": "Macro"
-    },
-    "RuleRef": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "rule": {
-          "type": "string"
         },
         "condition": {
           "type": "string"
@@ -95,79 +55,169 @@
         "enabled": {
           "type": "boolean"
         },
-        "append": {
-          "type": "boolean"
+        "exceptions": {
+          "items": {
+            "$ref": "#/definitions/Exception"
+          },
+          "type": "array"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/definitions/Item"
+          },
+          "type": "array"
+        },
+        "list": {
+          "type": "string"
+        },
+        "macro": {
+          "type": "string"
         },
         "output": {
           "type": "string"
         },
+        "override": {
+          "$ref": "#/definitions/Override"
+        },
         "priority": {
-          "type": "string",
-          "enum": [
-            "ALERT",
-            "EMERGENCY",
-            "NOTICE",
-            "WARNING",
-            "ERROR",
-            "DEBUG",
-            "INFO",
-            "INFORMATIONAL",
-            "CRITICAL"
-          ]
+          "$ref": "#/definitions/Priority"
         },
-        "tags": {
-          "type": "array",
+        "required_engine_version": {
+          "type": "string"
+        },
+        "required_plugin_versions": {
           "items": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          }
+            "$ref": "#/definitions/RequiredPluginVersion"
+          },
+          "type": "array"
         },
-        "warn_evttypes": {
-          "type": "boolean"
+        "rule": {
+          "type": "string"
         },
         "skip-if-unknown-filter": {
           "type": "boolean"
+        },
+        "source": {
+          "type": "string"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "warn_evttypes": {
+          "type": "boolean"
         }
       },
-      "required": ["rule", "desc", "condition", "output", "priority"],
-      "title": "Rule"
+      "required": [],
+      "title": "FalcoRule",
+      "type": "object"
     },
-    "AppendOnlyRuleRef": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "rule": {
+    "Item": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
           "type": "string"
+        }
+      ],
+      "title": "Item"
+    },
+    "OverriddenItem": {
+      "enum": [
+        "append",
+        "replace"
+      ],
+      "title": "OverriddenItem",
+      "type": "string"
+    },
+    "Override": {
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "capture": {
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "capture_duration": {
+          "$ref": "#/definitions/OverriddenItem"
         },
         "condition": {
-          "type": "string"
+          "$ref": "#/definitions/OverriddenItem"
         },
-        "append": {
-          "type": "boolean"
-        }
-      },
-      "required": ["rule", "append", "condition"],
-      "title": "AppendOnlyRule"
-    },
-    "EnableOnlyRuleRef": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "rule": {
-          "type": "string"
+        "desc": {
+          "$ref": "#/definitions/OverriddenItem"
         },
         "enabled": {
-          "type": "boolean"
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "exceptions": {
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "items": {
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "output": {
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "priority": {
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "skip-if-unknown-filter": {
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "tags": {
+          "$ref": "#/definitions/OverriddenItem"
+        },
+        "warn_evttypes": {
+          "$ref": "#/definitions/OverriddenItem"
         }
       },
-      "required": ["rule", "enabled"],
-      "title": "EnableOnlyRule"
+      "title": "Override",
+      "type": "object"
+    },
+    "Priority": {
+      "enum": [
+        "EMERGENCY",
+        "ALERT",
+        "CRITICAL",
+        "ERROR",
+        "WARNING",
+        "NOTICE",
+        "INFO",
+        "INFORMATIONAL",
+        "DEBUG"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "RequiredPluginVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "$ref": "#/definitions/Alternative"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "RequiredPluginVersion",
+      "type": "object"
     }
-  }
+  },
+  "items": {
+    "$ref": "#/definitions/FalcoRule"
+  },
+  "type": "array"
 }
